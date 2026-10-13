@@ -1,0 +1,107 @@
+/* Table frame (TableFrame in ResizableTable.tsx): the border lives on the scroll box, not the <table>,
+   so it closes on the right while the table is scrolled. Skins restyle .gam-table-frame, not the table. */
+
+.gam-table-frame {
+  position: relative;
+  max-width: 100%;
+  /* Clips the table to the frame (and its rounded corners, in skins that round it). */
+  overflow: hidden;
+}
+
+.gam-table-frame[data-bordered] {
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+/* Fixed-layout (resized) tables can be narrower than the page: hug them. */
+.gam-table-frame[data-fit] {
+  width: fit-content;
+  align-self: flex-start;
+}
+
+.gam-table-scroll {
+  overflow-x: auto;
+  /* Containing block for absolutely positioned cell content (VisuallyHidden labels), so it scrolls
+     with the table instead of escaping and widening the whole page. */
+  position: relative;
+}
+
+/* EmptyRow (ui/states.tsx): an empty table's headers can still be wider than a phone, so its message
+   sticks to the visible part of the scroll box (TableFrame sets --gam-table-view-w) instead of centring
+   across the whole row, half off-screen. Outside a frame the variable is unset and the width stays auto. */
+.gam-table-frame .gam-table-empty {
+  position: sticky;
+  left: 0;
+  width: var(--gam-table-view-w);
+  max-width: 100%;
+}
+
+/* Edge shadows: shown on a side while columns are scrolled out of view past it. */
+.gam-table-frame::before,
+.gam-table-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.gam-table-frame::before {
+  left: 0;
+  background: linear-gradient(to right, var(--table-edge-shadow), transparent);
+}
+
+.gam-table-frame::after {
+  right: 0;
+  background: linear-gradient(to left, var(--table-edge-shadow), transparent);
+}
+
+.gam-table-frame[data-more-left]::before,
+.gam-table-frame[data-more-right]::after {
+  opacity: 1;
+}
+
+/* Resizable column headers (see ResizableTable.tsx). */
+
+th[data-col] {
+  position: relative;
+  overflow: hidden;
+}
+
+.gam-col-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1;
+  touch-action: none;
+  user-select: none;
+}
+
+.gam-col-resize::after {
+  content: '';
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  right: 3px;
+  width: 2px;
+  border-radius: 2px;
+  /* Role token (App.css): follows the accent by default; skins can repoint it. */
+  background: var(--resize-grip);
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.gam-col-resize:hover::after {
+  opacity: 1;
+}
+
+/* Once columns are pinned, keep overflowing cell content from spilling over. */
+.gam-resizable-table[data-resized] td {
+  overflow: hidden;
+}

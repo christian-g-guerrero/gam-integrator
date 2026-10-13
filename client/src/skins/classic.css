@@ -1,0 +1,696 @@
+/*
+ * "Classic" skin — Mac OS Platinum (System 7 / Mac OS 8–9) aesthetic.
+ *
+ * Activated by `data-skin="classic"` on <html> (set by AppThemeProvider). The
+ * pure-token part of the skin — the Lucida Grande font and radius 0 — comes
+ * from buildTheme(); this file adds the chrome a theme object can't express:
+ * beveled borders, platinum surfaces, classic scrollbars, sunken input wells.
+ *
+ * Everything is scoped under [data-skin='classic'], so it's inert in Modern.
+ * Component rules read only the `--plat-*` tokens below — never a literal
+ * colour — so each colour scheme is one token block:
+ *   - light = Platinum: grey chrome, white content wells, black ink.
+ *   - dark  = Graphite: the same bevel geometry (light still falls from the
+ *     top-left: highlight edge top/left, shadow bottom/right) on charcoal
+ *     chrome, with content wells a step *darker* than the chrome and light ink.
+ *     Classic Mac had no dark mode; Graphite extends Platinum's rules rather
+ *     than inventing a new look.
+ *
+ * The accent axis still applies: selection, the storage donut, and filled
+ * buttons read `--mantine-primary-color-*` / Mantine's `--button-*` vars,
+ * matching classic Mac's user-set highlight color.
+ *
+ * Specificity: the token blocks are `:root[data-skin][data-mantine-color-scheme]`
+ * (0,3,0) so they beat Mantine's scheme selectors (0,2,0); a bare `[data-skin]` (0,1,0) silently loses.
+ */
+
+/* =================================================== TOKENS — Platinum (light) */
+
+:root[data-skin='classic'][data-mantine-color-scheme] {
+  color-scheme: light;
+
+  /* Platinum bevel palette */
+  --plat-face: #d8d8d8; /* window / chrome grey */
+  --plat-panel: #ffffff; /* content wells: cards, inputs, menus, modals */
+  --plat-hi: #ffffff; /* bevel highlight (top/left edge) */
+  --plat-shadow: #808080; /* bevel shadow (bottom/right edge) */
+  --plat-frame: #3a3a3a; /* outer 1px frame line */
+  --plat-track: #cfcfcf; /* scrollbar / well track */
+  --plat-ink: #000000; /* text */
+  --plat-ink-dim: #4a4a4a; /* dimmed text */
+  --plat-ink-disabled: #8a8a8a; /* disabled control label (not text that must be read) */
+  --plat-hover: #e6e6e6; /* nav-item hover */
+  --plat-default-hover: #efefef; /* Mantine default-variant hover */
+  --plat-header-top: #ededed; /* title-bar gradient start (ends at the face) */
+  --plat-btn-top: #f8f8f8;
+  --plat-btn-bottom: #cfcfcf;
+  --plat-btn-hover-top: #ffffff;
+  --plat-btn-hover-bottom: #d8d8d8;
+  --plat-btn-active-top: #c4c4c4;
+  --plat-btn-active-bottom: #dcdcdc;
+  --plat-seg-top: #ffffff; /* segmented-control indicator: lighter than the track so it pops */
+  --plat-seg-bottom: #e6e6e6;
+  --plat-th-top: #fbfbfb;
+  --plat-th-bottom: #d6d6d6;
+  --plat-grid-v: #d2d2d2; /* table column rules */
+  --plat-grid-h: #c9c9c9; /* table row rules */
+  --plat-zebra: #eef1f7; /* even rows — the Finder list view */
+  --plat-row-hover: #d7e4f7;
+  --plat-input-lo: #e8e8e8; /* sunken input's bottom/right inner edge */
+  --plat-thumb-top: #ececec;
+  --plat-thumb-bottom: #bfbfbf;
+  --plat-thumb-lo: #9a9a9a;
+  --plat-badge-hi: rgba(255, 255, 255, 0.6);
+  --plat-drop: rgba(0, 0, 0, 0.35); /* hard 2px drop under floating windows */
+  --plat-scrim: color-mix(in srgb, var(--plat-frame) 55%, transparent);
+  --plat-surface-accent: #eef1f6; /* <AccentCard> well */
+  /* Links: shade 8 is 3.5:1 on the platinum face; shade 9 + 25% black clears AA for every accent. */
+  --plat-link: color-mix(in srgb, var(--mantine-primary-color-9), black 25%);
+
+  /* Hue harmony amounts: how much of each hue tints the platinum face for light-variant surfaces. */
+  --plat-tint: 18%;
+  --plat-tint-hover: 30%;
+  /* Light-variant text per hue: shade 9 darkened by the minimum black mix that clears 4.6:1 on its tint, on
+     the bare face, and on the row-hover blue (shade 9 alone is only 2–3.6:1 there). */
+  --plat-blue-text: color-mix(in srgb, var(--mantine-color-blue-9), black 20%);
+  --plat-red-text: color-mix(in srgb, var(--mantine-color-red-9), black 25%);
+  --plat-green-text: color-mix(in srgb, var(--mantine-color-green-9), black 30%);
+  --plat-teal-text: color-mix(in srgb, var(--mantine-color-teal-9), black 25%);
+  --plat-grape-text: color-mix(in srgb, var(--mantine-color-grape-9), black 10%);
+  --plat-yellow-text: color-mix(in srgb, var(--mantine-color-yellow-9), black 40%);
+  --plat-orange-text: color-mix(in srgb, var(--mantine-color-orange-9), black 30%);
+  --plat-gray-text: var(--plat-frame);
+
+  /* Repoint core Mantine surface tokens. */
+  --mantine-color-body: var(--plat-face);
+  --mantine-color-text: var(--plat-ink);
+  --mantine-color-default: var(--plat-panel);
+  --mantine-color-default-hover: var(--plat-default-hover);
+  --mantine-color-default-color: var(--plat-ink);
+  --mantine-color-default-border: var(--plat-shadow);
+  --mantine-color-dimmed: var(--plat-ink-dim);
+  --mantine-color-anchor: var(--plat-link);
+  --mantine-radius-default: 0;
+  --mantine-radius-xs: 0;
+  --mantine-radius-sm: 0;
+  --mantine-radius-md: 0;
+  --mantine-radius-lg: 0;
+
+  /* Role tokens (defaults + consumers: App.css). Platinum folders are the
+     period lavender-blue (5.4:1 on white), files the dimmed grey; chart wells
+     use the scrollbar-track grey. Grip, chart bar and terminal keep the defaults. */
+  --icon-folder: #5b5fc7;
+  --icon-file: var(--mantine-color-dimmed);
+  --chart-track: var(--plat-track);
+
+  /* --- Semantic hue harmony -------------------------------------------------
+     Platinum has no soft pastel ramp of its own — the period look used flat
+     greys with sparse color. Mute each hue's LIGHT/OUTLINE scale to the
+     platinum face lightly tinted with Mantine's own hue shade (so the hue stays
+     recognizable — red still reads red) and the per-scheme text above.
+     `-filled` is left alone (skins/base.css owns fill contrast). */
+  --mantine-color-blue-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-blue-6) var(--plat-tint));
+  --mantine-color-blue-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-blue-6) var(--plat-tint-hover)
+  );
+  --mantine-color-blue-light-color: var(--plat-blue-text);
+  --mantine-color-blue-outline: var(--plat-blue-text);
+  --mantine-color-blue-outline-hover: var(--mantine-color-blue-light);
+
+  --mantine-color-red-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-red-6) var(--plat-tint));
+  --mantine-color-red-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-red-6) var(--plat-tint-hover)
+  );
+  --mantine-color-red-light-color: var(--plat-red-text);
+  --mantine-color-red-outline: var(--plat-red-text);
+  --mantine-color-red-outline-hover: var(--mantine-color-red-light);
+
+  --mantine-color-green-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-green-6) var(--plat-tint));
+  --mantine-color-green-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-green-6) var(--plat-tint-hover)
+  );
+  --mantine-color-green-light-color: var(--plat-green-text);
+  --mantine-color-green-outline: var(--plat-green-text);
+  --mantine-color-green-outline-hover: var(--mantine-color-green-light);
+
+  --mantine-color-teal-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-teal-6) var(--plat-tint));
+  --mantine-color-teal-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-teal-6) var(--plat-tint-hover)
+  );
+  --mantine-color-teal-light-color: var(--plat-teal-text);
+  --mantine-color-teal-outline: var(--plat-teal-text);
+  --mantine-color-teal-outline-hover: var(--mantine-color-teal-light);
+
+  --mantine-color-grape-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-grape-6) var(--plat-tint));
+  --mantine-color-grape-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-grape-6) var(--plat-tint-hover)
+  );
+  --mantine-color-grape-light-color: var(--plat-grape-text);
+  --mantine-color-grape-outline: var(--plat-grape-text);
+  --mantine-color-grape-outline-hover: var(--mantine-color-grape-light);
+
+  --mantine-color-yellow-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-yellow-6) var(--plat-tint));
+  --mantine-color-yellow-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-yellow-6) var(--plat-tint-hover)
+  );
+  --mantine-color-yellow-light-color: var(--plat-yellow-text);
+  --mantine-color-yellow-outline: var(--plat-yellow-text);
+  --mantine-color-yellow-outline-hover: var(--mantine-color-yellow-light);
+
+  --mantine-color-orange-light: color-mix(in srgb, var(--plat-face), var(--mantine-color-orange-6) var(--plat-tint));
+  --mantine-color-orange-light-hover: color-mix(
+    in srgb,
+    var(--plat-face),
+    var(--mantine-color-orange-6) var(--plat-tint-hover)
+  );
+  --mantine-color-orange-light-color: var(--plat-orange-text);
+  --mantine-color-orange-outline: var(--plat-orange-text);
+  --mantine-color-orange-outline-hover: var(--mantine-color-orange-light);
+
+  /* gray = neutral — no hue tint needed, just the platinum greys already here. */
+  --mantine-color-gray-light: var(--plat-track);
+  --mantine-color-gray-light-hover: color-mix(in srgb, var(--plat-track) 84%, var(--plat-ink));
+  --mantine-color-gray-light-color: var(--plat-gray-text);
+  --mantine-color-gray-outline: var(--plat-gray-text);
+  --mantine-color-gray-outline-hover: var(--plat-track);
+}
+
+/* =================================================== TOKENS — Graphite (dark) */
+
+/* Same names, charcoal values. Contrast: ink 13:1 on the wells / 10:1 on the face,
+   dimmed >= 5:1 on face, wells, zebra and row hover; each hue's text clears 4.6:1 on its tint and hover tint,
+   on the face, the wells, zebra and row hover. */
+:root[data-skin='classic'][data-mantine-color-scheme='dark'] {
+  color-scheme: dark;
+
+  --plat-face: #3a3a3a;
+  --plat-panel: #262626;
+  --plat-hi: #5a5a5a;
+  --plat-shadow: #1c1c1c;
+  --plat-frame: #0e0e0e;
+  --plat-track: #2e2e2e;
+  --plat-ink: #f0f0f0;
+  --plat-ink-dim: #b4b4b4;
+  --plat-ink-disabled: #7a7a7a;
+  --plat-hover: #464646;
+  --plat-default-hover: #303030;
+  --plat-header-top: #474747;
+  --plat-btn-top: #575757;
+  --plat-btn-bottom: #3a3a3a;
+  --plat-btn-hover-top: #626262;
+  --plat-btn-hover-bottom: #424242;
+  --plat-btn-active-top: #2c2c2c;
+  --plat-btn-active-bottom: #383838;
+  --plat-seg-top: #626262;
+  --plat-seg-bottom: #4a4a4a;
+  --plat-th-top: #4c4c4c;
+  --plat-th-bottom: #383838;
+  --plat-grid-v: #383838;
+  --plat-grid-h: #3c3c3c;
+  --plat-zebra: #2c2f35;
+  --plat-row-hover: #2f3d52;
+  --plat-input-lo: #3a3a3a;
+  --plat-thumb-top: #5e5e5e;
+  --plat-thumb-bottom: #454545;
+  --plat-thumb-lo: #2e2e2e;
+  --plat-badge-hi: rgba(255, 255, 255, 0.12);
+  --plat-drop: rgba(0, 0, 0, 0.6);
+  --plat-scrim: rgba(0, 0, 0, 0.6);
+  --plat-surface-accent: #2b313b;
+  /* Shade 4 + up to 30% white clears 4.6:1 on face, wells, zebra and row hover for every accent. */
+  --plat-link: color-mix(in srgb, var(--mantine-primary-color-4), white 30%);
+
+  --plat-tint: 24%;
+  --plat-tint-hover: 36%;
+  --plat-blue-text: color-mix(in srgb, var(--mantine-color-blue-3), white 25%);
+  --plat-red-text: color-mix(in srgb, var(--mantine-color-red-3), white 20%);
+  --plat-green-text: color-mix(in srgb, var(--mantine-color-green-3), white 25%);
+  --plat-teal-text: color-mix(in srgb, var(--mantine-color-teal-3), white 20%);
+  --plat-grape-text: color-mix(in srgb, var(--mantine-color-grape-3), white 25%);
+  --plat-yellow-text: color-mix(in srgb, var(--mantine-color-yellow-3), white 30%);
+  --plat-orange-text: color-mix(in srgb, var(--mantine-color-orange-3), white 25%);
+  --plat-gray-text: #d6d6d6;
+
+  --icon-folder: #a3a6f5; /* the Platinum lavender-blue, lifted for the dark wells */
+
+  /* Mantine's dark ramp, regreyed to Graphite so components the skin doesn't style (Tabs, Combobox
+     options, Kbd, …) still land on the palette: 0 ink · 2 dimmed · 3 placeholder · 4 rules · 5–6 raised ·
+     7 wells · 8–9 deep. */
+  --mantine-color-dark-0: #f0f0f0;
+  --mantine-color-dark-1: #d6d6d6;
+  --mantine-color-dark-2: #b4b4b4;
+  --mantine-color-dark-3: #8c8c8c;
+  --mantine-color-dark-4: #555555;
+  --mantine-color-dark-5: #464646;
+  --mantine-color-dark-6: #303030;
+  --mantine-color-dark-7: #262626;
+  --mantine-color-dark-8: #1e1e1e;
+  --mantine-color-dark-9: #141414;
+}
+
+/* ===================================================================== CHROME */
+
+[data-skin='classic'] body {
+  background: var(--plat-face);
+  /* Keep the browser's default antialiasing — legibility over a faux-bitmap
+     look. (An earlier `font-smoothing: none` made text read as pixelated.) */
+}
+
+/* Links: classic Mac blue, accent-aware, at AA in both schemes (--plat-link). */
+[data-skin='classic'] a,
+[data-skin='classic'] .mantine-Anchor-root {
+  color: var(--plat-link);
+}
+
+/* Selection + focus ring: classic had neither, so both fell back to the
+   browser/Mantine default (blue selection, no visible platinum focus style). */
+[data-skin='classic'] ::selection {
+  background: var(--mantine-primary-color-light);
+  color: var(--plat-ink);
+}
+[data-skin='classic'] :focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
+/* Raised-bevel + sunken-bevel helpers are inlined per component via box-shadow:
+   raised  → inset  1px  1px 0 var(--plat-hi),     inset -1px -1px 0 var(--plat-shadow)
+   sunken  → inset  1px  1px 0 var(--plat-shadow), inset -1px -1px 0 var(--plat-hi)     */
+
+[data-skin='classic'] .mantine-AppShell-header {
+  background: linear-gradient(var(--plat-header-top), var(--plat-face));
+  border-bottom: 1px solid var(--plat-frame);
+  box-shadow: inset 0 1px 0 var(--plat-hi);
+}
+
+[data-skin='classic'] .mantine-AppShell-navbar {
+  background: var(--plat-face);
+  border-right: 1px solid var(--plat-frame);
+  box-shadow: inset -1px 0 0 var(--plat-shadow);
+}
+
+[data-skin='classic'] .mantine-AppShell-main {
+  background: var(--plat-face);
+}
+
+/* App title + section headings: bold, tight, full ink */
+[data-skin='classic'] .mantine-Title-root {
+  letter-spacing: 0;
+  color: var(--plat-ink);
+}
+
+/* ------------------------------------------------------------------ nav links */
+
+[data-skin='classic'] .mantine-NavLink-root {
+  border: 1px solid transparent;
+  margin-bottom: 3px;
+  font-weight: 600;
+  color: var(--plat-ink);
+}
+[data-skin='classic'] .mantine-NavLink-root:hover {
+  background: var(--plat-hover);
+}
+/* Mantine 9 marks the router's current page with aria-current (sidebar) and a NavLink given `active` with
+   data-active (mailbox labels) — both get the white "selected" well. */
+[data-skin='classic'] .mantine-NavLink-root:is([data-active], [aria-current='page']) {
+  background: var(--plat-panel);
+  color: var(--plat-ink);
+  border: 2px solid var(--mantine-primary-color-filled);
+  box-shadow: 1px 1px 0 var(--plat-shadow);
+}
+
+/* -------------------------------------------------------- cards / paper wells */
+
+[data-skin='classic'] .mantine-Card-root,
+[data-skin='classic'] .mantine-Paper-root {
+  background: var(--plat-panel);
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+/* The tinted accent-surface panels (<AccentCard>) become a sunken platinum well.
+   Set on the panel itself, so selected table rows keep the accent tint. */
+[data-skin='classic'] [data-surface='accent'] {
+  --gam-surface-accent: var(--plat-surface-accent);
+}
+
+/* ------------------------------------------------------------------- buttons */
+
+/* Every button is a beveled platinum key. Light / outline / subtle keep their hue in the label
+   (`--button-color` is Mantine's per-variant text, repointed by the hue harmony above), so a
+   destructive "Delete selected" still reads red. */
+[data-skin='classic'] .mantine-Button-root {
+  border-radius: 3px;
+  border: 1px solid var(--plat-frame);
+  font-weight: 600;
+  color: var(--plat-ink);
+  background: linear-gradient(var(--plat-btn-top), var(--plat-btn-bottom));
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+[data-skin='classic'] .mantine-Button-root:is([data-variant='light'], [data-variant='outline']) {
+  color: var(--button-color);
+}
+[data-skin='classic'] .mantine-Button-root:hover:not(:disabled, [data-disabled]) {
+  background: linear-gradient(var(--plat-btn-hover-top), var(--plat-btn-hover-bottom));
+}
+[data-skin='classic'] .mantine-Button-root:active:not(:disabled, [data-disabled]) {
+  background: linear-gradient(var(--plat-btn-active-top), var(--plat-btn-active-bottom));
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+}
+/* Filled — the classic "default button": Mantine's own fill (accent for the primary action, the
+   semantic hue for red confirms / teal export / …) inside the beveled black frame. Mantine renders its
+   DEFAULT filled variant with NO data-variant attribute, hence :not([data-variant]). */
+[data-skin='classic'] .mantine-Button-root:is(:not([data-variant]), [data-variant='filled']) {
+  /* Mantine 9 only sets --button-* inline for an explicit color; the primary button uses its fallbacks. */
+  background: var(--button-bg, var(--mantine-primary-color-filled));
+  color: var(--button-color, var(--mantine-primary-color-contrast));
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.35);
+}
+[data-skin='classic']
+  .mantine-Button-root:is(:not([data-variant]), [data-variant='filled']):hover:not(:disabled, [data-disabled]) {
+  background: var(--button-hover, var(--mantine-primary-color-filled-hover));
+}
+/* Subtle (tertiary, e.g. Clear): flat text until hovered, like a Finder toolbar label. */
+[data-skin='classic'] .mantine-Button-root[data-variant='subtle'] {
+  color: var(--button-color);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+[data-skin='classic'] .mantine-Button-root[data-variant='subtle']:hover:not(:disabled, [data-disabled]) {
+  background: var(--button-hover);
+}
+/* Disabled: the period's dimmed label on an unpressable face — never looks clickable. */
+[data-skin='classic'] .mantine-Button-root.mantine-Button-root:is(:disabled, [data-disabled]) {
+  color: var(--plat-ink-disabled);
+  background: var(--plat-face);
+  border-color: var(--plat-shadow);
+  box-shadow: none;
+}
+
+/* ActionIcon (header color-scheme toggle, row actions) as a small beveled button */
+[data-skin='classic'] .mantine-ActionIcon-root {
+  border-radius: 3px;
+  border: 1px solid var(--plat-frame);
+  color: var(--ai-color, var(--plat-ink));
+  background: linear-gradient(var(--plat-btn-top), var(--plat-btn-bottom));
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+[data-skin='classic'] .mantine-ActionIcon-root[data-variant='subtle'] {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+[data-skin='classic'] .mantine-ActionIcon-root.mantine-ActionIcon-root:is(:disabled, [data-disabled]) {
+  color: var(--plat-ink-disabled);
+  background: var(--plat-face);
+  border-color: var(--plat-shadow);
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------------------- tables */
+
+[data-skin='classic'] .mantine-Table-th,
+[data-skin='classic'] table thead th {
+  background: linear-gradient(var(--plat-th-top), var(--plat-th-bottom));
+  border: 1px solid var(--plat-shadow) !important;
+  box-shadow: inset 1px 1px 0 var(--plat-hi);
+  color: var(--plat-ink);
+  font-weight: 700;
+}
+/* Body cells: solid ink, gridlines with enough contrast to read. */
+[data-skin='classic'] .mantine-Table-td,
+[data-skin='classic'] table tbody td {
+  color: var(--plat-ink);
+  border-right: 1px solid var(--plat-grid-v);
+  border-bottom: 1px solid var(--plat-grid-h);
+}
+/* Zebra striping — the classic Finder list view; makes wide rows scannable. */
+[data-skin='classic'] .mantine-Table-tbody tr:nth-of-type(even) td,
+[data-skin='classic'] table tbody tr:nth-of-type(even) td {
+  background: var(--plat-zebra);
+}
+[data-skin='classic'] .mantine-Table-tr:hover td,
+[data-skin='classic'] table tbody tr:hover td {
+  background: var(--plat-row-hover);
+}
+
+/* Framed (scrollable) tables (ResizableTable.css): the frame draws the outer edge in the header's grey,
+   so the edge cells drop their outer gridlines instead of doubling it. */
+[data-skin='classic'] .gam-table-frame[data-bordered] {
+  border-color: var(--plat-shadow);
+}
+[data-skin='classic'] .gam-table-frame thead th {
+  border-top: 0 !important;
+}
+[data-skin='classic'] .gam-table-frame tr > :first-child {
+  border-left: 0 !important;
+}
+[data-skin='classic'] .gam-table-frame tr > :last-child {
+  border-right: 0 !important;
+}
+[data-skin='classic'] .gam-table-frame tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --------------------------------------------------------------- form fields */
+
+[data-skin='classic'] .mantine-Input-input {
+  border: 1px solid var(--plat-shadow);
+  background: var(--plat-panel);
+  color: var(--plat-ink);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-input-lo);
+}
+[data-skin='classic'] .mantine-Input-input:focus {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -1px;
+}
+
+/* ------------------------------------------------------------------ checkbox */
+
+[data-skin='classic'] .mantine-Checkbox-input {
+  border-radius: 0;
+  border: 1px solid var(--plat-frame);
+  background: var(--plat-panel);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+}
+[data-skin='classic'] .mantine-Checkbox-input:checked {
+  background: var(--mantine-primary-color-filled);
+  border-color: var(--plat-frame);
+  box-shadow: none;
+}
+[data-skin='classic'] .mantine-Checkbox-input:checked + * .mantine-Checkbox-icon,
+[data-skin='classic'] .mantine-Checkbox-icon {
+  color: var(--mantine-primary-color-contrast);
+}
+
+/* ------------------------------------------------- progress / ring meters */
+
+[data-skin='classic'] .mantine-Progress-root {
+  background: var(--plat-track);
+  border: 1px solid var(--plat-shadow);
+  border-radius: 0;
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+}
+[data-skin='classic'] .mantine-Progress-section {
+  border-radius: 0;
+}
+/* Ring track = the sunken well grey, not Mantine's cool gray-2 / dark-4. Repoint the root-curve var rather
+   than stroking `circle` (that would clobber the coloured arcs). */
+:root[data-skin='classic'] .mantine-RingProgress-curve {
+  --rp-curve-root-color: var(--plat-track);
+}
+[data-skin='classic'] .mantine-RingProgress-label {
+  color: var(--plat-ink);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------- segmented control */
+
+[data-skin='classic'] .mantine-SegmentedControl-root {
+  background: var(--plat-face);
+  border: 1px solid var(--plat-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+  padding: 2px;
+}
+[data-skin='classic'] .mantine-SegmentedControl-indicator {
+  background: linear-gradient(var(--plat-seg-top), var(--plat-seg-bottom));
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+[data-skin='classic'] .mantine-SegmentedControl-label {
+  color: var(--plat-ink);
+  font-weight: 600;
+}
+[data-skin='classic'] .mantine-SegmentedControl-label[data-active] {
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------------- tabs */
+
+/* Platinum folder tabs: the active tab is a raised well joined to the rule below it; the rest sit on
+   the face behind it. (Mantine's default is a bare coloured underline.) */
+[data-skin='classic'] .mantine-Tabs-list {
+  --tab-border-color: var(--plat-shadow);
+}
+[data-skin='classic'] .mantine-Tabs-tab {
+  color: var(--plat-ink);
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-bottom: 0;
+}
+[data-skin='classic'] .mantine-Tabs-tab:hover {
+  background: var(--plat-hover);
+}
+[data-skin='classic'] .mantine-Tabs-tab[data-active] {
+  background: var(--plat-panel);
+  border-color: var(--plat-shadow);
+  border-top: 2px solid var(--mantine-primary-color-filled);
+  box-shadow: inset 1px 0 0 var(--plat-hi);
+}
+
+/* --------------------------------------------------------- badges / alerts */
+
+[data-skin='classic'] .mantine-Badge-root {
+  border: 1px solid var(--plat-frame);
+  box-shadow: inset 1px 1px 0 var(--plat-badge-hi);
+  text-transform: none;
+  font-weight: 700;
+}
+[data-skin='classic'] .mantine-Alert-root {
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+
+/* ------------------------------------------------------------------ stepper */
+
+[data-skin='classic'] .mantine-Stepper-stepIcon {
+  border-radius: 0;
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* ------------------------------------------------------------------- modals */
+
+[data-skin='classic'] .mantine-Modal-content,
+[data-skin='classic'] .mantine-Popover-dropdown,
+[data-skin='classic'] .mantine-Menu-dropdown {
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    2px 2px 0 var(--plat-drop),
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+  background: var(--plat-panel);
+}
+[data-skin='classic'] .mantine-Modal-header {
+  background: linear-gradient(var(--plat-header-top), var(--plat-face));
+  border-bottom: 1px solid var(--plat-shadow);
+}
+/* Mantine zeroes the body's top padding under a header; with the header's rule drawn, content would sit
+   flush against it. */
+[data-skin='classic'] .mantine-Modal-body {
+  padding-top: var(--mantine-spacing-md);
+}
+/* Modal scrim: dark platinum frame tint, not Mantine's default black. */
+[data-skin='classic'] .mantine-Modal-overlay,
+[data-skin='classic'] .mantine-Overlay-root {
+  background: var(--plat-scrim) !important;
+}
+
+/* ------------------------------------------------------------- toasts / tips */
+
+/* Toasts (Notification) reuse the beveled panel treatment. */
+[data-skin='classic'] .mantine-Notification-root {
+  background: var(--plat-panel);
+  border: 1px solid var(--plat-frame);
+  box-shadow:
+    2px 2px 0 var(--plat-drop),
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-shadow);
+}
+[data-skin='classic'] .mantine-Notification-title {
+  color: var(--plat-ink);
+  font-weight: 700;
+}
+[data-skin='classic'] .mantine-Notification-description {
+  color: var(--plat-ink);
+}
+
+[data-skin='classic'] .mantine-Tooltip-tooltip {
+  background: var(--plat-face);
+  color: var(--plat-ink);
+  border: 1px solid var(--plat-frame);
+  box-shadow: 1px 1px 0 var(--plat-drop);
+}
+
+/* -------------------------------------------------- scrollbars (classic Mac) */
+
+/* Native scrollbars (WebKit) */
+[data-skin='classic'] ::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+[data-skin='classic'] ::-webkit-scrollbar-track {
+  background: var(--plat-track);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+}
+[data-skin='classic'] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--plat-thumb-top), var(--plat-thumb-bottom));
+  border: 1px solid var(--plat-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-hi),
+    inset -1px -1px 0 var(--plat-thumb-lo);
+}
+[data-skin='classic'] ::-webkit-scrollbar-corner {
+  background: var(--plat-track);
+}
+
+/* Mantine ScrollArea (used by data tables) */
+[data-skin='classic'] .mantine-ScrollArea-scrollbar {
+  background: var(--plat-track);
+  box-shadow:
+    inset 1px 1px 0 var(--plat-shadow),
+    inset -1px -1px 0 var(--plat-hi);
+}
+[data-skin='classic'] .mantine-ScrollArea-thumb {
+  background: linear-gradient(var(--plat-thumb-top), var(--plat-thumb-bottom)) !important;
+  border: 1px solid var(--plat-shadow);
+  border-radius: 0;
+}

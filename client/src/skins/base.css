@@ -1,0 +1,88 @@
+/*
+ * Contrast floor shared by every skin.
+ *
+ * Mantine fills buttons and badges with shade 6 + white text. For most hues that is 2–4:1 — below WCAG AA's
+ * 4.5:1 (e.g. the primary "Run" button, blue-6, is 3.55:1). No skin repaints -filled (each keeps the semantic
+ * hue on purpose), so the fix lives here once: each hue is darkened by the minimum black mix that gives
+ * white text >= 4.6:1. Hover steps 10% further. Dark scheme: Mantine fills with shade 8, which still misses
+ * AA for the hues below — same treatment from shade 8.
+ *
+ * Specificity: [data-skin][data-mantine-color-scheme] (0,3,0) beats Mantine's scheme selectors (0,2,0).
+ */
+
+:root[data-skin][data-mantine-color-scheme='light'] {
+  --mantine-color-gray-filled: color-mix(in srgb, var(--mantine-color-gray-6), black 20%);
+  --mantine-color-gray-filled-hover: color-mix(in srgb, var(--mantine-color-gray-6), black 30%);
+  --mantine-color-red-filled: color-mix(in srgb, var(--mantine-color-red-6), black 20%);
+  --mantine-color-red-filled-hover: color-mix(in srgb, var(--mantine-color-red-6), black 30%);
+  --mantine-color-pink-filled: color-mix(in srgb, var(--mantine-color-pink-6), black 15%);
+  --mantine-color-pink-filled-hover: color-mix(in srgb, var(--mantine-color-pink-6), black 25%);
+  --mantine-color-grape-filled: color-mix(in srgb, var(--mantine-color-grape-6), black 10%);
+  --mantine-color-grape-filled-hover: color-mix(in srgb, var(--mantine-color-grape-6), black 20%);
+  --mantine-color-indigo-filled: color-mix(in srgb, var(--mantine-color-indigo-6), black 5%);
+  --mantine-color-indigo-filled-hover: color-mix(in srgb, var(--mantine-color-indigo-6), black 15%);
+  --mantine-color-blue-filled: color-mix(in srgb, var(--mantine-color-blue-6), black 15%);
+  --mantine-color-blue-filled-hover: color-mix(in srgb, var(--mantine-color-blue-6), black 25%);
+  --mantine-color-cyan-filled: color-mix(in srgb, var(--mantine-color-cyan-6), black 25%);
+  --mantine-color-cyan-filled-hover: color-mix(in srgb, var(--mantine-color-cyan-6), black 35%);
+  --mantine-color-teal-filled: color-mix(in srgb, var(--mantine-color-teal-6), black 30%);
+  --mantine-color-teal-filled-hover: color-mix(in srgb, var(--mantine-color-teal-6), black 40%);
+  --mantine-color-green-filled: color-mix(in srgb, var(--mantine-color-green-6), black 35%);
+  --mantine-color-green-filled-hover: color-mix(in srgb, var(--mantine-color-green-6), black 45%);
+  --mantine-color-lime-filled: color-mix(in srgb, var(--mantine-color-lime-6), black 40%);
+  --mantine-color-lime-filled-hover: color-mix(in srgb, var(--mantine-color-lime-6), black 50%);
+  --mantine-color-yellow-filled: color-mix(in srgb, var(--mantine-color-yellow-6), black 40%);
+  --mantine-color-yellow-filled-hover: color-mix(in srgb, var(--mantine-color-yellow-6), black 50%);
+  --mantine-color-orange-filled: color-mix(in srgb, var(--mantine-color-orange-6), black 30%);
+  --mantine-color-orange-filled-hover: color-mix(in srgb, var(--mantine-color-orange-6), black 40%);
+}
+
+:root[data-skin][data-mantine-color-scheme='dark'] {
+  --mantine-color-red-filled: color-mix(in srgb, var(--mantine-color-red-8), black 5%);
+  --mantine-color-red-filled-hover: color-mix(in srgb, var(--mantine-color-red-8), black 15%);
+
+  --mantine-color-cyan-filled: color-mix(in srgb, var(--mantine-color-cyan-8), black 5%);
+  --mantine-color-cyan-filled-hover: color-mix(in srgb, var(--mantine-color-cyan-8), black 15%);
+
+  --mantine-color-teal-filled: color-mix(in srgb, var(--mantine-color-teal-8), black 10%);
+  --mantine-color-teal-filled-hover: color-mix(in srgb, var(--mantine-color-teal-8), black 20%);
+
+  --mantine-color-green-filled: color-mix(in srgb, var(--mantine-color-green-8), black 15%);
+  --mantine-color-green-filled-hover: color-mix(in srgb, var(--mantine-color-green-8), black 25%);
+
+  --mantine-color-lime-filled: color-mix(in srgb, var(--mantine-color-lime-8), black 25%);
+  --mantine-color-lime-filled-hover: color-mix(in srgb, var(--mantine-color-lime-8), black 35%);
+
+  --mantine-color-yellow-filled: color-mix(in srgb, var(--mantine-color-yellow-8), black 30%);
+  --mantine-color-yellow-filled-hover: color-mix(in srgb, var(--mantine-color-yellow-8), black 40%);
+
+  --mantine-color-orange-filled: color-mix(in srgb, var(--mantine-color-orange-8), black 15%);
+  --mantine-color-orange-filled-hover: color-mix(in srgb, var(--mantine-color-orange-8), black 25%);
+}
+
+/* Buttons read Mantine's `medium` weight, which theme.ts sets to 500 for labels; they were 600 through Mantine 8.
+   Skins that set their own button weight out-rank this (0,2,0). */
+.mantine-Button-root {
+  font-weight: 600;
+}
+
+/* Mantine 8 trimmed SegmentedControl label padding to match input heights (sm 3px, was 5px) — every Settings
+   and File browser toggle lost 4px. Restore the Mantine 7 sizes the skins were designed against. */
+.mantine-SegmentedControl-root {
+  --sc-padding-xs: 3px 6px;
+  --sc-padding-sm: 5px 10px;
+  --sc-padding-md: 7px 14px;
+  --sc-padding-lg: 9px 16px;
+  --sc-padding-xl: 12px 20px;
+}
+
+/* Mantine 9's Code inherits its text color (dimmed inside a Hint) and lightened its fill; through v8 it was
+   black/white on gray-1 / dark-5. Same specificity as Mantine's rule, loaded later; skin rules out-rank it. */
+:where([data-mantine-color-scheme='light']) .mantine-Code-root {
+  background-color: var(--code-bg, var(--mantine-color-gray-1));
+  color: var(--mantine-color-black);
+}
+:where([data-mantine-color-scheme='dark']) .mantine-Code-root {
+  background-color: var(--code-bg, var(--mantine-color-dark-5));
+  color: var(--mantine-color-white);
+}

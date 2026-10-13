@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GAM Integrator: a web GUI for GAM7 and Google Workspace admin</title>
+    <meta
+      name="description"
+      content="Free, open-source web GUI for GAM7. Manage Google Workspace (G Suite) Drive and Gmail without the command line: transfer ownership of whole Google Drive folders, audit storage and sharing, export mailboxes. Runs on your own machine."
+    />
+    <link rel="canonical" href="https://christian-g-guerrero.github.io/gam-integrator/" />
+    <meta name="theme-color" content="#ebeef1" />
+    <script>
+      // Light by default; a stored choice from the toggle applies before first paint.
+      try {
+        if (localStorage.getItem('gam-site-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    </script>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GAM Integrator" />
+    <meta property="og:title" content="GAM Integrator: a web GUI for GAM7 and Google Workspace admin" />
+    <meta
+      property="og:description"
+      content="Manage Google Workspace Drive and Gmail without the terminal. Transfer ownership of whole Drive folders, audit storage and sharing, export mailboxes. Free and open source."
+    />
+    <meta property="og:url" content="https://christian-g-guerrero.github.io/gam-integrator/" />
+    <meta property="og:image" content="https://christian-g-guerrero.github.io/gam-integrator/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta
+      property="og:image:alt"
+      content="GAM Integrator: a web GUI for GAM7 and Google Workspace admin, beside a screenshot of its storage dashboard"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f5aa6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2'/%3E%3Cpath d='M17 17v2a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "GAM Integrator",
+        "description": "Free, open-source web GUI for GAM7 that manages Google Workspace Drive and Gmail without the command line: recursive Google Drive folder ownership transfer, Drive storage and sharing audit, Gmail mailbox export.",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Google Workspace administration",
+        "operatingSystem": "macOS, Linux",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "license": "https://opensource.org/licenses/MIT",
+        "url": "https://christian-g-guerrero.github.io/gam-integrator/",
+        "downloadUrl": "https://github.com/christian-g-guerrero/gam-integrator",
+        "codeRepository": "https://github.com/christian-g-guerrero/gam-integrator",
+        "image": "https://christian-g-guerrero.github.io/gam-integrator/social-preview.png",
+        "author": { "@type": "Person", "name": "Christian Guerrero" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is there a GUI for GAM?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. GAM Integrator is a web front end for GAM7 that runs locally. Most tasks are buttons and forms, and a built-in console still runs any gam command when you need one."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I transfer ownership of a Google Drive folder and all its files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In Drive, changing a folder's owner leaves the files inside owned by whoever created them. In GAM Integrator's Transfer page, pick the folder and the new owner, check the dry-run preview, and every file and subfolder moves to the new owner."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work with GAMADV-XTD3?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "GAM7 is the current release of GAM and includes what was GAMADV-XTD3. The setup wizard installs GAM7, and it also finds an existing install in ~/bin/gamadv-xtd3."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does my data leave my computer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Only through GAM's own calls to Google's APIs. The app runs on 127.0.0.1, has no cloud service of its own, and keeps its cache and exports in ~/.gam-integrator/."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I try it without a Google Workspace account?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. npm run dev:mock runs it against a fake domain with sample users, files, and mail. Every feature works, and nothing talks to Google."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      :root {
+        color-scheme: light;
+        --page: #ebeef1;
+        --grid: #dfe5ea;
+        --card: #fffaf0;
+        --raised: #fffdf7;
+        --sunken: #faf4e7;
+        --ink: #2e201a;
+        --ink-soft: #5a463c;
+        --muted: #6b6058;
+        --hair: #c9bcae;
+        --yellow: #fbe9b7;
+        --blue: #dde9fa;
+        --green: #dceedf;
+        --red: #f9ded7;
+        --grape: #ece2f4;
+        --teal: #d9eeeb;
+        --link: #1f5aa6;
+        --primary: #1f5aa6;
+        --on-primary: #ffffff;
+        --terminal: #241b16;
+        --on-terminal: #f3e9dd;
+        --shadow: 2px 2px 0 rgba(90, 70, 60, 0.28);
+        --shadow-lg: 4px 4px 0 rgba(46, 32, 26, 0.2);
+        --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        --sans: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --page: #1d2127;
+        --grid: #262b33;
+        --card: #2a221d;
+        --raised: #342a23;
+        --sunken: #241d19;
+        --ink: #f3e9dd;
+        --ink-soft: #a08b7a;
+        --muted: #cdbdad;
+        --hair: #5e4d42;
+        --yellow: #4a3b1c;
+        --blue: #22324a;
+        --green: #1f3828;
+        --red: #46261f;
+        --grape: #34284a;
+        --teal: #1b3634;
+        --link: #9cc3f0;
+        --primary: #9cc3f0;
+        --on-primary: #161210;
+        --terminal: #161210;
+        --shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+        --shadow-lg: 4px 4px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+      body {
+        margin: 0;
+        background-color: var(--page);
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+        color: var(--ink);
+        font: 400 17px/1.6 var(--sans);
+      }
+      a {
+        color: var(--link);
+        text-underline-offset: 2px;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.9em;
+        background: var(--sunken);
+        border: 1px solid var(--hair);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--mono);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      @media (min-width: 720px) {
+        .wrap {
+          padding: 0 32px;
+        }
+      }
+      .panel {
+        background: var(--card);
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      /* top bar */
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 20px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 18px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .mark {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        background: var(--yellow);
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 6px;
+        box-shadow: var(--shadow);
+      }
+      .top nav {
+        display: flex;
+        gap: 20px;
+        font-size: 15px;
+      }
+      .top nav a {
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .top nav a:hover {
+        text-decoration: underline;
+      }
+      .top nav {
+        align-items: center;
+      }
+      .theme {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        color: var(--ink);
+        background: var(--raised);
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 6px;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+      }
+      .theme:active {
+        transform: translate(1px, 1px);
+        box-shadow: none;
+      }
+      .theme:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+      }
+      .theme .sun,
+      :root[data-theme='dark'] .theme .moon {
+        display: none;
+      }
+      :root[data-theme='dark'] .theme .sun {
+        display: block;
+      }
+      @media (max-width: 640px) {
+        .top nav .opt {
+          display: none;
+        }
+      }
+
+      /* hero */
+      .hero {
+        padding: 56px 0 40px;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: clamp(34px, 6vw, 60px);
+        max-width: 15ch;
+        margin: 0 auto;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--link);
+      }
+      .lede {
+        max-width: 640px;
+        margin: 20px auto 0;
+        font-size: clamp(17px, 2.2vw, 20px);
+        color: var(--ink-soft);
+      }
+      :root[data-theme='dark'] .lede {
+        color: var(--muted);
+      }
+      .ctas {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 18px;
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 6px;
+        box-shadow: var(--shadow);
+        font: 600 16px var(--sans);
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--raised);
+        transition: transform 80ms;
+      }
+      .btn:active {
+        transform: translate(1px, 1px);
+        box-shadow: none;
+      }
+      .btn.primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .meta {
+        margin-top: 16px;
+        font-family: var(--mono);
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      /* screenshot */
+      .shot {
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 0 auto;
+        box-shadow: var(--shadow-lg);
+      }
+      .shot .bar {
+        height: 26px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-left: 12px;
+        background: var(--yellow);
+        border-bottom: 1.5px solid var(--ink-soft);
+      }
+      .shot .bar i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 1.5px solid var(--ink-soft);
+        background: var(--raised);
+      }
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .caption {
+        text-align: center;
+        font-size: 14px;
+        color: var(--muted);
+        margin: 12px 0 0;
+      }
+
+      section {
+        padding: 64px 0 0;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      section > .wrap > h2 {
+        font-size: clamp(26px, 3.6vw, 36px);
+        margin-bottom: 12px;
+      }
+      .intro {
+        max-width: 680px;
+        color: var(--ink-soft);
+        margin: 0 0 28px;
+      }
+      :root[data-theme='dark'] .intro {
+        color: var(--muted);
+      }
+
+      /* spotlight */
+      .spot {
+        display: grid;
+        gap: 24px;
+        padding: 24px;
+      }
+      @media (min-width: 860px) {
+        .spot {
+          grid-template-columns: 1fr 1fr;
+          padding: 32px;
+          gap: 32px;
+          align-items: center;
+        }
+      }
+      .demo {
+        grid-column: 1 / -1;
+        margin: 0;
+        overflow: hidden;
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 8px;
+        background: var(--sunken);
+      }
+      .demo img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .demo figcaption {
+        padding: 10px 14px;
+        border-top: 1.5px solid var(--ink-soft);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .spot h2 {
+        font-size: clamp(24px, 3.2vw, 32px);
+        margin-bottom: 14px;
+      }
+      .spot p {
+        margin: 0 0 12px;
+      }
+      .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      .steps li {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 12px;
+        align-items: start;
+        padding: 12px 14px;
+        background: var(--sunken);
+        border: 1px solid var(--hair);
+        border-radius: 6px;
+      }
+      .steps b.n {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid var(--ink-soft);
+        background: var(--yellow);
+        font: 600 14px var(--mono);
+      }
+
+      /* features */
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      }
+      .feat {
+        padding: 20px;
+      }
+      .feat .ic {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 6px;
+        margin-bottom: 14px;
+      }
+      .feat h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .feat p {
+        margin: 0;
+        font-size: 16px;
+        color: var(--ink-soft);
+      }
+      :root[data-theme='dark'] .feat p {
+        color: var(--muted);
+      }
+      .bg-yellow {
+        background: var(--yellow);
+      }
+      .bg-blue {
+        background: var(--blue);
+      }
+      .bg-green {
+        background: var(--green);
+      }
+      .bg-red {
+        background: var(--red);
+      }
+      .bg-grape {
+        background: var(--grape);
+      }
+      .bg-teal {
+        background: var(--teal);
+      }
+
+      /* pair of screenshots */
+      .pair {
+        display: grid;
+        align-items: start;
+        gap: 16px;
+        margin-top: 24px;
+      }
+      @media (min-width: 760px) {
+        .pair {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .pair figure {
+        margin: 0;
+        overflow: hidden;
+      }
+      .pair img {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 10;
+        object-fit: contain;
+        background: var(--sunken);
+        border-bottom: 1.5px solid var(--ink-soft);
+      }
+      .pair figcaption {
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      /* install */
+      .install {
+        display: grid;
+        gap: 24px;
+      }
+      @media (min-width: 860px) {
+        .install {
+          grid-template-columns: 1.1fr 0.9fr;
+          align-items: start;
+        }
+      }
+      pre.term {
+        margin: 0;
+        padding: 18px 20px;
+        overflow-x: auto;
+        background: var(--terminal);
+        color: var(--on-terminal);
+        border: 1.5px solid var(--ink-soft);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        font: 500 14.5px/1.7 var(--mono);
+      }
+      pre.term code {
+        background: none;
+        border: 0;
+        padding: 0;
+        font-size: inherit;
+        color: inherit;
+      }
+      pre.term .c {
+        color: #b3a193;
+      }
+      .needs {
+        padding: 20px 24px;
+      }
+      .needs h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      .needs ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .needs li + li {
+        margin-top: 6px;
+      }
+
+      /* security */
+      .sec {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      }
+      .sec .panel {
+        padding: 18px 20px;
+      }
+      .sec h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+      .sec p {
+        margin: 0;
+        font-size: 15.5px;
+      }
+
+      /* faq */
+      .faq {
+        display: grid;
+        gap: 12px;
+      }
+      .faq details {
+        padding: 0;
+      }
+      .faq summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 16px 20px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary::after {
+        content: '+';
+        font-family: var(--mono);
+        font-weight: 600;
+        flex: none;
+      }
+      .faq details[open] summary::after {
+        content: '−';
+      }
+      .faq summary:focus-visible,
+      .btn:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+      }
+      .faq details p {
+        margin: 0;
+        padding: 0 20px 18px;
+        max-width: 80ch;
+        color: var(--ink-soft);
+      }
+      :root[data-theme='dark'] .faq details p {
+        color: var(--muted);
+      }
+
+      footer {
+        margin-top: 72px;
+        padding: 28px 0 40px;
+        border-top: 1.5px solid var(--hair);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      footer .wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wrap top">
+      <a class="brand" href="./" aria-label="GAM Integrator home">
+        <span class="mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 4h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2" />
+            <path d="M17 17v2a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2" />
+          </svg>
+        </span>
+        GAM Integrator
+      </a>
+      <nav aria-label="Page">
+        <a class="opt" href="#features">Features</a>
+        <a class="opt" href="#install">Install</a>
+        <a class="opt" href="#faq">FAQ</a>
+        <a href="https://github.com/christian-g-guerrero/gam-integrator">GitHub</a>
+        <button class="theme" type="button" aria-pressed="false" aria-label="Dark mode" title="Dark mode">
+          <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg>
+          <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="wrap hero">
+        <h1>A web GUI for <em>GAM7</em> and Google Workspace admin</h1>
+        <p class="lede">
+          Manage Google Drive and Gmail across your whole Google Workspace (formerly G Suite) domain, without
+          learning GAM's command syntax. GAM Integrator installs and sets up GAM for you, then turns everyday
+          admin jobs into point-and-click screens.
+        </p>
+        <div class="ctas">
+          <a class="btn primary" href="https://github.com/christian-g-guerrero/gam-integrator">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z" /></svg>
+            Get it on GitHub
+          </a>
+          <a class="btn" href="#install">Install in 5 commands</a>
+        </div>
+        <p class="meta">Free · MIT licensed · runs on your own machine</p>
+      </div>
+
+      <div class="wrap">
+        <div class="panel shot">
+          <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img
+            data-dark="screenshots/dashboard-dark.png"
+            src="screenshots/dashboard-light.png"
+            width="2880"
+            height="1800"
+            alt="GAM Integrator dashboard: pooled Google Workspace storage ring and a per-user table of Gmail and Drive usage"
+          />
+        </div>
+        <p class="caption">The storage dashboard, shown with a sample domain in the Pastel Retro skin.</p>
+      </div>
+
+      <section aria-labelledby="transfer-h">
+        <div class="wrap">
+          <div class="panel spot">
+            <div>
+              <p class="eyebrow">The main feature</p>
+              <h2 id="transfer-h">Transfer ownership of a Google Drive folder, contents included</h2>
+              <p>
+                In Google Drive, giving a folder a new owner doesn't change who owns the files inside it. Anything a
+                colleague added stays theirs, so a departing employee's "transferred" folder is often still full of
+                other people's files.
+              </p>
+              <p>
+                GAM Integrator walks the entire folder tree and transfers every file and subfolder to the new owner,
+                whoever owns it now. A deep scan also finds files that were never shared with you.
+              </p>
+            </div>
+            <ol class="steps">
+              <li><b class="n">1</b><span>Pick the folder and the new owner.</span></li>
+              <li><b class="n">2</b><span>Review a dry-run preview: item counts per current owner.</span></li>
+              <li><b class="n">3</b><span>Confirm by typing the folder's name.</span></li>
+              <li><b class="n">4</b><span>Watch live progress. You can cancel at any point.</span></li>
+            </ol>
+            <figure class="demo">
+              <img
+                data-dark="screenshots/demo-dark.gif"
+                src="screenshots/demo.gif"
+                width="960"
+                height="600"
+                loading="lazy"
+                alt="Demo: transferring a Google Drive folder and everything inside it to a new owner, from the dry-run preview to a completed job"
+              />
+              <figcaption>The whole flow on a sample domain: dry run, typed confirmation, live progress.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" aria-labelledby="features-h">
+        <div class="wrap">
+          <p class="eyebrow">Features</p>
+          <h2 id="features-h">Everyday Google Workspace admin, without the terminal</h2>
+          <p class="intro">
+            Built for Google Workspace super admins and IT teams who want GAM's reach without memorizing its syntax:
+            offboarding a departing employee's Drive, auditing storage and sharing across every user, and exporting a
+            user's mailbox.
+          </p>
+          <div class="grid">
+            <article class="panel feat">
+              <div class="ic bg-yellow" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-13a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-9l-4 4" /><path d="M8 9h8" /><path d="M8 13h6" /></svg>
+              </div>
+              <h3>Set up GAM without the docs</h3>
+              <p>
+                A guided wizard installs GAM7, or finds your existing GAM7 or GAMADV-XTD3, and walks you through the
+                Google Cloud project, OAuth, and domain-wide delegation in plain English, with a live terminal in the
+                browser.
+              </p>
+            </article>
+            <article class="panel feat">
+              <div class="ic bg-blue" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 3v9h9" /></svg>
+              </div>
+              <h3>Audit Google Drive across the domain</h3>
+              <p>
+                See storage per user, open any user's Drive, browse folders, search, filter by file type, and export the
+                results to CSV.
+              </p>
+            </article>
+            <article class="panel feat">
+              <div class="ic bg-green" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
+              </div>
+              <h3>Manage Drive sharing and permissions</h3>
+              <p>
+                See who each file is shared with, and add, change, or remove access. Copy or move files within a user's
+                Drive.
+              </p>
+            </article>
+            <article class="panel feat">
+              <div class="ic bg-red" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-14a2 2 0 0 1-2-2v-10z" /><path d="M3 7l9 6l9-6" /></svg>
+              </div>
+              <h3>Audit and export Gmail</h3>
+              <p>
+                Browse and search any user's mailbox, search mail across the domain, see a Gmail storage report, and
+                export a whole mailbox to a lossless JSONL archive or CSV, with attachments if you want them.
+              </p>
+            </article>
+            <article class="panel feat">
+              <div class="ic bg-grape" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l5 5l-5 5" /><path d="M12 19l7 0" /></svg>
+              </div>
+              <h3>Run any GAM command</h3>
+              <p>
+                The built-in console runs one <code>gam</code> command at a time and asks you to confirm destructive ones
+                (delete, wipe, trash, …).
+              </p>
+            </article>
+            <article class="panel feat">
+              <div class="ic bg-teal" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 1 0-18c4.97 0 9 3.582 9 8c0 1.06-.474 2.078-1.318 2.828c-.844.75-1.989 1.172-3.182 1.172h-2.5a2 2 0 0 0-1 3.75a1.3 1.3 0 0 1-1 2.25" /><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
+              </div>
+              <h3>Pick a look</h3>
+              <p>
+                Light, dark, or follow your OS, with an accent color and three skins: Modern, Classic (Mac OS Platinum),
+                and Pastel Retro.
+              </p>
+            </article>
+          </div>
+
+          <div class="pair">
+            <figure class="panel">
+              <img
+                data-dark="screenshots/setup-dark.png"
+                src="screenshots/setup-light.png"
+                width="1888"
+                height="784"
+                loading="lazy"
+                alt="GAM setup wizard with six steps: Detect, Install, Project, Authorize, Delegation, Verify"
+              />
+              <figcaption>The guided GAM setup wizard</figcaption>
+            </figure>
+            <figure class="panel">
+              <img
+                data-dark="screenshots/drive-dark.png"
+                src="screenshots/drive-light.png"
+                width="2880"
+                height="1800"
+                loading="lazy"
+                alt="Per-user Google Drive browser with search, file-type filters, and bulk selection"
+              />
+              <figcaption>Browsing one user's Google Drive</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="install" aria-labelledby="install-h">
+        <div class="wrap">
+          <p class="eyebrow">Install</p>
+          <h2 id="install-h">Up and running in five commands</h2>
+          <p class="intro">
+            You don't need to install GAM first. On first launch the app opens the setup wizard, which installs GAM7 or
+            finds the copy you already have.
+          </p>
+          <div class="install">
+            <pre class="term" aria-label="Install commands"><code><span class="c"># clone, build, and start</span>
+git clone https://github.com/christian-g-guerrero/gam-integrator.git
+cd gam-integrator
+npm install
+npm run build
+npm start
+<span class="c"># then open http://127.0.0.1:5199</span>
+
+<span class="c"># or try it on a fake domain first, no Workspace needed</span>
+npm run dev:mock</code></pre>
+            <div class="panel needs">
+              <h3>What you need</h3>
+              <ul>
+                <li><b>Node.js 20.19+ or 22.12+</b></li>
+                <li><b>A super-admin account</b> on your Google Workspace domain</li>
+                <li><b>macOS.</b> Developed and tested on macOS. Linux should work, but hasn't been tested yet.</li>
+              </ul>
+              <p style="margin: 14px 0 0">
+                On macOS you can double-click <code>start.command</code> instead: it installs, builds, starts the app,
+                and opens your browser.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="security-h">
+        <div class="wrap">
+          <p class="eyebrow">Security</p>
+          <h2 id="security-h">Super-admin power, locked to your machine</h2>
+          <p class="intro">With GAM set up, the app can act on your whole domain, so it is built to stay local.</p>
+          <div class="sec">
+            <div class="panel">
+              <h3>Local only</h3>
+              <p>
+                The server listens on <code>127.0.0.1</code> and rejects cross-origin and DNS-rebinding requests from
+                other websites.
+              </p>
+            </div>
+            <div class="panel">
+              <h3>No shell</h3>
+              <p>
+                GAM runs as a direct program call with fixed arguments, never through a shell. The console accepts only
+                a single <code>gam</code> command.
+              </p>
+            </div>
+            <div class="panel">
+              <h3>Your data stays put</h3>
+              <p>
+                GAM's credentials stay where GAM keeps them. The app's own cache and exports live in
+                <code>~/.gam-integrator/</code>, and you can review and delete them in Settings.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-h">
+        <div class="wrap">
+          <p class="eyebrow">FAQ</p>
+          <h2 id="faq-h">Questions admins ask</h2>
+          <div class="faq">
+            <details class="panel" open>
+              <summary>Is there a GUI for GAM?</summary>
+              <p>
+                Yes, this is one. GAM Integrator is a web front end for GAM7 that runs locally. Most tasks are buttons
+                and forms, and a built-in console still runs any <code>gam</code> command when you need one.
+              </p>
+            </details>
+            <details class="panel">
+              <summary>How do I transfer ownership of a Google Drive folder and all its files?</summary>
+              <p>
+                In Drive, changing a folder's owner leaves the files inside owned by whoever created them. Use
+                <b>Transfer</b> in GAM Integrator: pick the folder and the new owner, check the dry-run preview, and
+                every file and subfolder moves to the new owner.
+              </p>
+            </details>
+            <details class="panel">
+              <summary>Does it work with GAMADV-XTD3?</summary>
+              <p>
+                GAM7 is the current release of GAM and includes what was GAMADV-XTD3. The setup wizard installs GAM7,
+                and it also finds an existing install in <code>~/bin/gamadv-xtd3</code>.
+              </p>
+            </details>
+            <details class="panel">
+              <summary>Does my data leave my computer?</summary>
+              <p>
+                Only through GAM's own calls to Google's APIs. The app runs on <code>127.0.0.1</code>, has no cloud
+                service of its own, and keeps its cache and exports in <code>~/.gam-integrator/</code>.
+              </p>
+            </details>
+            <details class="panel">
+              <summary>Can I try it without a Google Workspace account?</summary>
+              <p>
+                Yes. <code>npm run dev:mock</code> runs it against a fake domain with sample users, files, and mail.
+                Every feature works, and nothing talks to Google.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>GAM Integrator · MIT License · by Christian Guerrero</span>
+        <span>
+          Built on <a href="https://github.com/GAM-team/GAM">GAM7</a>. Not affiliated with Google.
+          <a href="https://github.com/christian-g-guerrero/gam-integrator">Source on GitHub</a>
+        </span>
+      </div>
+    </footer>
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var btn = document.querySelector('.theme');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        var imgs = document.querySelectorAll('img[data-dark]');
+        imgs.forEach(function (img) {
+          img.dataset.light = img.getAttribute('src');
+        });
+        function apply(dark) {
+          if (dark) root.dataset.theme = 'dark';
+          else delete root.dataset.theme;
+          btn.setAttribute('aria-pressed', String(dark));
+          btn.setAttribute('aria-label', dark ? 'Light mode' : 'Dark mode');
+          btn.title = dark ? 'Light mode' : 'Dark mode';
+          meta.content = dark ? '#1d2127' : '#ebeef1';
+          imgs.forEach(function (img) {
+            img.src = dark ? img.dataset.dark : img.dataset.light;
+          });
+        }
+        apply(root.dataset.theme === 'dark');
+        btn.addEventListener('click', function () {
+          var dark = root.dataset.theme !== 'dark';
+          apply(dark);
+          try {
+            localStorage.setItem('gam-site-theme', dark ? 'dark' : 'light');
+          } catch (e) {}
+        });
+      })();
+    </script>
+  </body>
+</html>

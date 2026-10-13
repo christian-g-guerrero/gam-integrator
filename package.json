@@ -1,0 +1,67 @@
+{
+  "name": "gam-integrator",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Web GUI for GAM7: manage Google Workspace (G Suite) Drive and Gmail without the command line. Transfer ownership of whole Google Drive folders, audit storage and sharing, export mailboxes.",
+  "keywords": [
+    "gam",
+    "gam7",
+    "gamadv-xtd3",
+    "google-workspace",
+    "google-workspace-admin",
+    "gsuite",
+    "google-admin",
+    "google-drive",
+    "drive-ownership-transfer",
+    "gmail",
+    "gmail-export",
+    "offboarding",
+    "sysadmin",
+    "gui"
+  ],
+  "license": "MIT",
+  "author": "Christian Guerrero",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/christian-g-guerrero/gam-integrator.git"
+  },
+  "homepage": "https://github.com/christian-g-guerrero/gam-integrator#readme",
+  "bugs": {
+    "url": "https://github.com/christian-g-guerrero/gam-integrator/issues"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "postinstall": "chmod +x node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true",
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:mock": "GAM_MOCK=1 concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:mock:alt": "GAM_MOCK=1 API_PORT=5299 concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server",
+    "test": "npm test -w server",
+    "lint": "eslint client/src server/src --max-warnings 0",
+    "format": "prettier --write client server",
+    "format:check": "prettier --check client server"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true,
+    "node-pty@1.1.0": true
+  }
+}

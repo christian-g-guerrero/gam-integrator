@@ -1,0 +1,59 @@
+/*
+ * Modern skin — WCAG AA contrast on Mantine's stock palette.
+ *
+ * Mantine draws light-variant text, links and dimmed text with shade 6 (light), and fills with shade 8 (dark). For most
+ * hues that is 2–3.5:1 against white or the tinted badge background — below AA's 4.5:1 for the small text
+ * these carry (badges, nav, hints). Each hue is darkened by the *minimum* black mix that clears 4.6:1
+ * (computed against white and against its own 10% tint), so hues
+ * keep their identity. The other skins define their own palettes. Fills (both schemes) for every skin: skins/base.css.
+ *
+ * Specificity: [data-skin][data-mantine-color-scheme] (0,3,0) beats Mantine's scheme selectors (0,2,0).
+ */
+
+:root[data-skin='modern'][data-mantine-color-scheme='light'] {
+  --mantine-color-dimmed: #61686f; /* gray-6 #868e96 is 3.3:1 on white; this is 5.1:1 even on gray-1 */
+  --mantine-color-anchor: var(--mantine-primary-color-light-color);
+
+  --mantine-color-gray-light-color: color-mix(in srgb, var(--mantine-color-gray-6), black 25%);
+  --mantine-color-gray-outline: color-mix(in srgb, var(--mantine-color-gray-6), black 25%);
+
+  --mantine-color-red-light-color: color-mix(in srgb, var(--mantine-color-red-6), black 25%);
+  --mantine-color-red-outline: color-mix(in srgb, var(--mantine-color-red-6), black 25%);
+
+  --mantine-color-pink-light-color: color-mix(in srgb, var(--mantine-color-pink-6), black 20%);
+  --mantine-color-pink-outline: color-mix(in srgb, var(--mantine-color-pink-6), black 20%);
+
+  --mantine-color-grape-light-color: color-mix(in srgb, var(--mantine-color-grape-6), black 15%);
+  --mantine-color-grape-outline: color-mix(in srgb, var(--mantine-color-grape-6), black 15%);
+
+  --mantine-color-violet-light-color: color-mix(in srgb, var(--mantine-color-violet-6), black 5%);
+  --mantine-color-violet-outline: color-mix(in srgb, var(--mantine-color-violet-6), black 5%);
+
+  --mantine-color-indigo-light-color: color-mix(in srgb, var(--mantine-color-indigo-6), black 15%);
+  --mantine-color-indigo-outline: color-mix(in srgb, var(--mantine-color-indigo-6), black 15%);
+
+  --mantine-color-blue-light-color: color-mix(in srgb, var(--mantine-color-blue-6), black 20%);
+  --mantine-color-blue-outline: color-mix(in srgb, var(--mantine-color-blue-6), black 20%);
+
+  --mantine-color-cyan-light-color: color-mix(in srgb, var(--mantine-color-cyan-6), black 30%);
+  --mantine-color-cyan-outline: color-mix(in srgb, var(--mantine-color-cyan-6), black 30%);
+
+  --mantine-color-teal-light-color: color-mix(in srgb, var(--mantine-color-teal-6), black 35%);
+  --mantine-color-teal-outline: color-mix(in srgb, var(--mantine-color-teal-6), black 35%);
+
+  --mantine-color-green-light-color: color-mix(in srgb, var(--mantine-color-green-6), black 35%);
+  --mantine-color-green-outline: color-mix(in srgb, var(--mantine-color-green-6), black 35%);
+
+  --mantine-color-lime-light-color: color-mix(in srgb, var(--mantine-color-lime-6), black 40%);
+  --mantine-color-lime-outline: color-mix(in srgb, var(--mantine-color-lime-6), black 40%);
+
+  --mantine-color-yellow-light-color: color-mix(in srgb, var(--mantine-color-yellow-6), black 45%);
+  --mantine-color-yellow-outline: color-mix(in srgb, var(--mantine-color-yellow-6), black 45%);
+
+  --mantine-color-orange-light-color: color-mix(in srgb, var(--mantine-color-orange-6), black 35%);
+  --mantine-color-orange-outline: color-mix(in srgb, var(--mantine-color-orange-6), black 35%);
+}
+
+:root[data-skin='modern'][data-mantine-color-scheme='dark'] {
+  --mantine-color-dimmed: #9a9a9a; /* dark-2 #828282 is 3.5:1 on a dark-6 card; this is 4.8:1 */
+}

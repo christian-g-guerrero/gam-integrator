@@ -1,0 +1,71 @@
+/* App shell layout overrides (see App.tsx). */
+
+/* Mantine forces the mobile navbar to 100% width while open, which leaves nothing to tap outside
+   the drawer. Below `md` (the AppShell navbar breakpoint) make it a drawer instead; the scrim Overlay
+   covers the strip beside it. (The collapse transform translates by the navbar's own width, so it
+   still hides fully.) */
+@media (max-width: 61.99em) {
+  .gam-navbar {
+    --app-shell-navbar-width: min(280px, 85vw);
+  }
+}
+
+/* Semantic text colors (ui/tokens.ts TEXT). Defaults read Mantine's light-variant text color, which
+   skins/modern.css darkens to AA; Classic and Pastel Retro repoint these in their own sheets. */
+:root {
+  --gam-text-success: var(--mantine-color-green-light-color);
+  --gam-text-warning: var(--mantine-color-orange-light-color);
+  --gam-text-danger: var(--mantine-color-red-light-color);
+}
+
+/* Role tokens for non-Mantine elements — icons, chart bars, grips, the xterm canvas. They paint raw
+   values, so they can't inherit a skin unless they read a token. These are the Modern defaults (the
+   terminal ones match xterm's stock ANSI colours); every other skin repoints them in its own sheet.
+   Consumers read the bare var() — no inline fallbacks, so this is the one home for the defaults. */
+:root {
+  --icon-folder: var(--mantine-color-yellow-7);
+  --icon-file: var(--mantine-color-gray-6);
+  --chart-bar: var(--mantine-color-orange-6);
+  --chart-track: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  --resize-grip: var(--mantine-primary-color-4);
+  /* Edge shadow on a table frame while columns are scrolled out of view (ResizableTable.css). */
+  --table-edge-shadow: light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55));
+  /* Terminal (Term.tsx reads these into the xterm theme). */
+  --surface-terminal: #16181d;
+  --text-on-terminal: #ffffff;
+  --term-ok: #0dbc79;
+  --term-error: #cd3131;
+  --term-command: #e5e510;
+  --term-dim: #666666;
+}
+
+/* Accent surface (ui/tokens.ts ACCENT_BG): selected rows + <AccentCard> panels. It's applied inline,
+   which beats any stylesheet rule — so skins repoint this variable instead of overriding `background`. */
+:root {
+  --gam-surface-accent: light-dark(var(--mantine-primary-color-0), var(--mantine-color-dark-5));
+}
+
+/* Numeric table cells (ui/table.tsx NumTd): one line, digits aligned down the column. */
+.gam-num {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Phone widths (below `sm`). */
+@media (max-width: 47.99em) {
+  /* Page titles (ui/Page.tsx) step down to h3 size: a long one — a job title, "<Name>'s Drive" —
+     otherwise stacks four lines of 26px bold above the content. Still an h2 for the outline. */
+  h2.gam-page-title {
+    font-size: var(--mantine-h3-font-size);
+    line-height: var(--mantine-h3-line-height);
+  }
+
+  /* Page-level tabs (Email audit): three icon + label tabs don't fit one row and wrap into a ragged
+     second line. Drop the icons and tighten the padding so they share one row. */
+  .gam-page-tabs .mantine-Tabs-tab {
+    padding-inline: var(--mantine-spacing-sm);
+  }
+  .gam-page-tabs .mantine-Tabs-tabSection {
+    display: none;
+  }
+}

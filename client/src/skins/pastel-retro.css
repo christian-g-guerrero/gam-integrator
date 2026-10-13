@@ -1,0 +1,973 @@
+/*
+ * "Pastel Retro" skin.
+ *
+ * A warm-ivory, calm retro-computing look: late-'80s desktop-utility structure
+ * (cocoa-ink outlines, hard offset shadows, mono display type, technical-paper
+ * grid) recolored through a softened Google palette, held to modern contrast and
+ * responsive standards: self-hosted IBM Plex, a multi-segment storage ring, and
+ * precise component states.
+ *
+ * Activated by `data-skin="pastel-retro"` on <html> (set by AppThemeProvider).
+ * The pure-token part — the sans/mono pairing and control radius — comes from
+ * buildTheme(); this file carries the complete token set plus the Mantine
+ * repointing and component chrome a theme object can't express.
+ *
+ * Two deliberate choices:
+ *   1. A dark variant ("Night"). The light look is warm paper whose one dark
+ *      surface is the terminal panel. Night grows the app's dark scheme out of
+ *      exactly that panel's palette and keeps every structural rule (see the
+ *      NIGHT token block).
+ *   2. Accent axis + semantic filled buttons. The "primary = pastel fill + ink
+ *      text" look is kept structurally (ink border + hard shadow + 1px
+ *      press), but filled/primary buttons keep their Mantine semantic/accent hue
+ *      with the framework's AA-guaranteed text: the app's filled buttons carry
+ *      real meaning (red danger, teal export, grape consolidate, orange
+ *      transfer) and the accent switcher offers eight hues, four of which have no
+ *      pastel in this palette — a blanket soft recolor would flatten the
+ *      semantics and can't cover every accent. The fixed chrome — links,
+ *      active nav, table headers, focus, badges, ring, the canvas grid — is
+ *      anchored to the pastel palette.
+ */
+
+/* ============================================================ TOKENS ==== */
+/* Every component reads colour/size/radius/shadow from a custom property, never a
+   hardcoded hex. Fonts are self-hosted via @fontsource imports in main.tsx, so
+   there is no font @import here. */
+/* `:root[data-skin=…][data-mantine-color-scheme]` (specificity 0,3,0), not a bare `[data-skin]` (0,1,0):
+   Mantine defines its per-hue light/scheme tokens under
+   `:root[data-mantine-color-scheme="light"]` (0,2,0) in a <style> injected after
+   our CSS (the v8 variables resolver, ThemeProvider.tsx), so a tie goes to Mantine —
+   the token repoints below must out-rank it. A bare attribute selector silently loses. */
+:root[data-skin='pastel-retro'][data-mantine-color-scheme] {
+  /* --- Warm ivory ramp (panels, rows, controls) ------------------------- */
+  --ivory-50: #fffdf7;
+  --ivory-100: #fffaf0;
+  --ivory-200: #faf4e7;
+  --ivory-300: #f2e9d9;
+  --ivory-400: #e9dcc6;
+
+  /* --- Cool paper ramp (the desk the panels sit on) --------------------- */
+  --paper-100: #f3f5f7;
+  --paper-200: #ebeef1;
+  --paper-300: #dfe5ea;
+
+  /* --- Cocoa ink ramp (type, outlines) --------------------------------- */
+  --cocoa-900: #2e201a;
+  --cocoa-800: #433026;
+  --cocoa-700: #5a463c;
+  --cocoa-600: #6b6058;
+  --cocoa-500: #7a6f66;
+  --cocoa-300: #c9bcae;
+  --cocoa-200: #ded3c4;
+  --cocoa-100: #ebe2d5;
+
+  /* --- Softened Google accents -----------------------------------------
+     -fill  graphics, rings, filled buttons, 1px edges (ink text only)
+     -soft  tinted surfaces
+     -edge  hairline on a soft surface
+     -text  the ONLY value allowed on type (all >=4.5:1 on ivory)          */
+  --blue-fill: #7ba7db;
+  --blue-soft: #dde9fa;
+  --blue-edge: #a8c4e6;
+  --blue-text: #1f5aa6;
+  --red-fill: #de7a6c;
+  --red-soft: #f9ded7;
+  --red-edge: #eaaba0;
+  --red-text: #a63b2f;
+  --yellow-fill: #e6be63;
+  --yellow-soft: #fbe9b7;
+  --yellow-edge: #ddc383;
+  --yellow-text: #7a5300;
+  --green-fill: #77bb8c;
+  --green-soft: #dceedf;
+  --green-edge: #a6d3b1;
+  --green-text: #1e6b3c;
+  --grape-fill: #a98cc4;
+  --grape-soft: #ece2f4;
+  --grape-edge: #c6b0d8;
+  --grape-text: #6b4a8c;
+  --teal-fill: #6fb5ae;
+  --teal-soft: #d9eeeb;
+  --teal-edge: #a2d1cb;
+  --teal-text: #1b6560;
+
+  /* --- Surfaces --------------------------------------------------------- */
+  --surface-page: var(--paper-200); /* app canvas, carries the grid */
+  --surface-card: var(--ivory-100); /* panels, cards, table body */
+  --surface-raised: var(--ivory-50); /* top bar, inputs, buttons */
+  --surface-sunken: var(--ivory-200); /* zebra rows, secondary panels */
+  --surface-inset: var(--ivory-300); /* wells, segmented-control track */
+  --surface-selected: var(--blue-soft); /* active nav, selected rows, hover */
+  --surface-header: var(--yellow-soft); /* table headers — the signature */
+  --surface-terminal: #241b16; /* console / PTY output */
+
+  /* --- Text ------------------------------------------------------------- */
+  --text-body: var(--cocoa-900);
+  --text-heading: var(--cocoa-900);
+  --text-muted: var(--cocoa-600); /* 5.2:1 on ivory — metadata */
+  --text-subtle: var(--cocoa-500); /* 4.5:1 floor — annotations only */
+  --text-on-fill: #ffffff; /* only on --*-text backgrounds */
+  --text-on-terminal: #f3e9dd;
+  /* Terminal ANSI palette — warm, never neon. Read by
+     Term.tsx into the xterm theme; defaults in App.css. */
+  --term-dim: #a8968a;
+  --term-ok: #9fd3ab;
+  --term-error: #ec9d92;
+  --term-command: #f0cf8b;
+  --text-on-pastel: var(--cocoa-900); /* ink on a pastel -fill (checkbox tick) — dark in both schemes */
+  --link: var(--blue-text);
+  --link-hover: #17457f;
+
+  /* --- Borders ---------------------------------------------------------- */
+  --border-ink: var(--cocoa-700); /* 1.5px structural outline */
+  --border-hairline: var(--cocoa-300); /* interior rules, row dividers */
+  --border-soft: var(--cocoa-100); /* quietest separator */
+  --grid-line: var(--paper-300);
+  --focus-ring: var(--blue-text);
+  --fill-edge: rgba(46, 32, 26, 0.3); /* frame on a filled (semantic-hue) button */
+  --scroll-thumb: var(--cocoa-300);
+  --scrim: rgba(46, 32, 26, 0.32); /* warm modal scrim, never black */
+  --hover-mix: var(--cocoa-900); /* what a soft surface mixes toward on hover */
+
+  /* --- Semantic status -------------------------------------------------- */
+  --ok-fill: var(--green-fill);
+  --ok-soft: var(--green-soft);
+  --ok-text: var(--green-text);
+  --warn-fill: var(--yellow-fill);
+  --warn-soft: var(--yellow-soft);
+  --warn-text: var(--yellow-text);
+  --danger-fill: var(--red-fill);
+  --danger-soft: var(--red-soft);
+  --danger-text: var(--red-text);
+  /* App-level semantic text tokens (ui/tokens.ts TEXT) → this skin's AA text values. */
+  --gam-text-success: var(--ok-text);
+  --gam-text-warning: var(--warn-text);
+  --gam-text-danger: var(--danger-text);
+  --gam-surface-accent: var(--surface-selected);
+  --info-fill: var(--blue-fill);
+  --info-soft: var(--blue-soft);
+  --info-text: var(--blue-text);
+  --neutral-soft: var(--ivory-300);
+  --neutral-text: var(--cocoa-600);
+
+  /* ------------------------------------------------------ TYPOGRAPHY --- */
+  /* Reference-only below: the full type / space / size scales are kept
+     so new chrome can quote them, but Mantine's own scales drive the
+     layout — many of these have no reader yet. Don't treat absence of a reader
+     as a bug; do prune anything that drifts from what the app actually uses. */
+  --font-display: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
+  --font-body: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-display);
+
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 32px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-body: 1.55;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --tracking-display: -0.01em; /* mono titles */
+  --tracking-label: 0.06em; /* uppercase micro labels */
+
+  --type-page-title: var(--fw-bold) var(--fs-2xl) / var(--lh-tight) var(--font-display);
+  --type-section-title: var(--fw-bold) var(--fs-lg) / var(--lh-snug) var(--font-display);
+  --type-metric: var(--fw-bold) var(--fs-xl) / var(--lh-tight) var(--font-display);
+  --type-body: var(--fw-regular) var(--fs-sm) / var(--lh-body) var(--font-body);
+  --type-ui: var(--fw-semibold) var(--fs-sm) / 1.2 var(--font-body);
+  --type-hint: var(--fw-regular) var(--fs-xs) / var(--lh-snug) var(--font-body);
+  --type-label: var(--fw-semibold) var(--fs-2xs) / 1.2 var(--font-body);
+  --type-code: var(--fw-regular) var(--fs-xs) / var(--lh-snug) var(--font-mono);
+  --numeric: tabular-nums;
+
+  /* --------------------------------------------------- SPACE / SIZE --- */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 48px;
+
+  --gap-stack: var(--space-5); /* between blocks in a page column */
+  --gap-inline: var(--space-3); /* between controls in a row */
+  --pad-card: var(--space-6);
+  --pad-card-tight: var(--space-4);
+  --pad-cell-x: var(--space-4);
+  --pad-cell-y: 9px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+  --border-w: 1.5px;
+  --border-w-hair: 1px;
+
+  --control-h-xs: 26px;
+  --control-h-sm: 30px;
+  --control-h-md: 36px;
+  --icon-nav: 18px;
+  --icon-md: 16px;
+  --icon-xs: 14px;
+
+  --topbar-h: 56px;
+  --page-pad: var(--space-6);
+  --page-max-data: 1080px; /* tables and browsers */
+  --page-max-focused: 920px; /* wizards, consoles, detail views */
+  --grid-size: 32px;
+
+  /* ---------------------------------------------------- ELEVATION ----- */
+  --shadow-raised: 2px 2px 0 rgba(90, 70, 60, 0.28);
+  --shadow-control: 1px 1px 0 rgba(90, 70, 60, 0.24);
+  --shadow-overlay: 4px 4px 0 rgba(46, 32, 26, 0.2);
+  --shadow-inset: inset 1px 1px 0 rgba(90, 70, 60, 0.16);
+  --bevel-top: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --press-offset: translate(1px, 1px);
+
+  /* ------------------------------------------------------- MOTION ----- */
+  --dur-fast: 90ms;
+  --dur-base: 140ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --transition-control:
+    background-color var(--dur-base) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+
+  /* ---------------------------------------- Mantine repointing --
+     One line — --mantine-color-dimmed — fixes most of the readability
+     complaints, because every c="dimmed" in the app inherits it. */
+  color-scheme: light;
+  --mantine-color-body: var(--surface-page);
+  --mantine-color-text: var(--text-body);
+  --mantine-color-default: var(--surface-raised);
+  --mantine-color-default-hover: var(--surface-sunken);
+  --mantine-color-default-border: var(--border-ink);
+  --mantine-color-default-color: var(--text-body);
+  --mantine-color-dimmed: var(--text-muted);
+  --mantine-color-anchor: var(--link);
+  --mantine-radius-xs: 4px;
+  --mantine-radius-sm: 6px;
+  --mantine-radius-md: 6px;
+  --mantine-radius-default: 6px;
+  --mantine-radius-lg: 8px;
+
+  /* --- Semantic hue harmony (the dynamic token links) -------------------
+     The core repoint above only covers body/surface/border tokens, so every
+     `color="blue|red|green|…"` Mantine component (Alert, light Badge, light /
+     subtle Button, coloured Text) still rendered in Mantine's SATURATED
+     defaults on the warm paper. Repoint each hue's LIGHT / OUTLINE scales to
+     this palette's soft/text/edge so all of them follow the skin from one
+     place. `-filled` is deliberately left alone — filled buttons keep their
+     semantic hue + AA text (see the filled-button note above). */
+  --mantine-color-blue-light: var(--blue-soft);
+  --mantine-color-blue-light-hover: color-mix(in srgb, var(--blue-soft) 84%, var(--hover-mix));
+  --mantine-color-blue-light-color: var(--blue-text);
+  --mantine-color-blue-outline: var(--blue-text);
+  --mantine-color-blue-outline-hover: var(--blue-soft);
+
+  --mantine-color-red-light: var(--red-soft);
+  --mantine-color-red-light-hover: color-mix(in srgb, var(--red-soft) 84%, var(--hover-mix));
+  --mantine-color-red-light-color: var(--red-text);
+  --mantine-color-red-outline: var(--red-text);
+  --mantine-color-red-outline-hover: var(--red-soft);
+
+  --mantine-color-green-light: var(--green-soft);
+  --mantine-color-green-light-hover: color-mix(in srgb, var(--green-soft) 84%, var(--hover-mix));
+  --mantine-color-green-light-color: var(--green-text);
+  --mantine-color-green-outline: var(--green-text);
+  --mantine-color-green-outline-hover: var(--green-soft);
+
+  --mantine-color-teal-light: var(--teal-soft);
+  --mantine-color-teal-light-hover: color-mix(in srgb, var(--teal-soft) 84%, var(--hover-mix));
+  --mantine-color-teal-light-color: var(--teal-text);
+  --mantine-color-teal-outline: var(--teal-text);
+  --mantine-color-teal-outline-hover: var(--teal-soft);
+
+  --mantine-color-grape-light: var(--grape-soft);
+  --mantine-color-grape-light-hover: color-mix(in srgb, var(--grape-soft) 84%, var(--hover-mix));
+  --mantine-color-grape-light-color: var(--grape-text);
+  --mantine-color-grape-outline: var(--grape-text);
+  --mantine-color-grape-outline-hover: var(--grape-soft);
+
+  --mantine-color-yellow-light: var(--yellow-soft);
+  --mantine-color-yellow-light-hover: color-mix(in srgb, var(--yellow-soft) 84%, var(--hover-mix));
+  --mantine-color-yellow-light-color: var(--yellow-text);
+  --mantine-color-yellow-outline: var(--yellow-text);
+  --mantine-color-yellow-outline-hover: var(--yellow-soft);
+
+  /* orange = the app's "attention / pending" hue → mapped to the yellow pastel
+     (spec routes attention to yellow); keeps "Setup required" etc. on-palette. */
+  --mantine-color-orange-light: var(--yellow-soft);
+  --mantine-color-orange-light-hover: color-mix(in srgb, var(--yellow-soft) 84%, var(--hover-mix));
+  --mantine-color-orange-light-color: var(--yellow-text);
+  --mantine-color-orange-outline: var(--yellow-text);
+  --mantine-color-orange-outline-hover: var(--yellow-soft);
+
+  /* Badge edges: the soft/text/edge triplet — the -edge hairline per
+     hue (read by the Badge vars in theme.ts). Orange rides yellow, as above. */
+  --gam-edge-blue: var(--blue-edge);
+  --gam-edge-red: var(--red-edge);
+  --gam-edge-green: var(--green-edge);
+  --gam-edge-teal: var(--teal-edge);
+  --gam-edge-grape: var(--grape-edge);
+  --gam-edge-yellow: var(--yellow-edge);
+  --gam-edge-orange: var(--yellow-edge);
+  --gam-edge-default: var(--border-hairline);
+
+  /* gray = neutral (cancelled jobs, muted labels) → ivory surface + cocoa text. */
+  --mantine-color-gray-light: var(--neutral-soft);
+  --mantine-color-gray-light-hover: color-mix(in srgb, var(--neutral-soft) 84%, var(--hover-mix));
+  --mantine-color-gray-light-color: var(--neutral-text);
+  --mantine-color-gray-outline: var(--border-hairline);
+  --mantine-color-gray-outline-hover: var(--neutral-soft);
+
+  /* --- Role tokens for non-Mantine elements (icons, chart bars, grips) ---
+     These elements paint raw values, so they can't inherit the skin unless
+     they read a token. Defaults live in App.css; the warm values are here. */
+  --icon-folder: var(--yellow-text);
+  --icon-file: var(--text-subtle);
+  --chart-bar: var(--blue-fill);
+  --chart-track: var(--surface-inset);
+  --resize-grip: var(--blue-fill);
+  --table-edge-shadow: rgba(90, 70, 60, 0.16); /* the control-shadow cocoa */
+}
+
+/* ======================================================= NIGHT (dark) ==== */
+/* The dark variant extends the spec from its one sanctioned dark surface — the terminal panel (#241b16
+   ground, #f3e9dd cream text, warm never-neon ANSI) — to the whole app, keeping every structural rule:
+   warm panels on a cooler gridded desk, ink outlines, hard offset shadows, mono display type, the yellow
+   table header, pale-blue selection. Only the SEMANTIC tokens are redefined (the light ramps above stay as
+   documentation of the spec); every component rule already reads them.
+     - desk: deep cool slate with a faint grid; panels: warm cocoa, raised = a step lighter.
+     - ink: cream type; outlines a warm mid-cocoa (>=4.1:1 on every panel — still reads as a drawn line).
+     - pastels: the -fill values are unchanged (6–9:1 on the panels, and ink-on-fill still holds); -soft
+       become deep tinted grounds, -edge their mid-tone, -text a lifted pastel (>=4.6:1 on its soft, its
+       hover, every panel, the selection blue and the header amber).
+     - shadows: black, stronger — a 28% cocoa shadow vanishes on a dark desk. */
+:root[data-skin='pastel-retro'][data-mantine-color-scheme='dark'] {
+  color-scheme: dark;
+
+  --blue-soft: #263a52;
+  --blue-edge: #4c6b90;
+  --blue-text: #9cbde4;
+  --red-soft: #4b2924;
+  --red-edge: #8d4d44;
+  --red-text: #e69b91;
+  --yellow-soft: #4a3a18;
+  --yellow-edge: #90753a;
+  --yellow-text: #e6be63;
+  --green-soft: #213f2c;
+  --green-edge: #487757;
+  --green-text: #92c9a3;
+  --grape-soft: #3b2d4b;
+  --grape-edge: #6d5881;
+  --grape-text: #bfa9d3;
+  --teal-soft: #1e3f3b;
+  --teal-edge: #42746f;
+  --teal-text: #93c8c2;
+
+  --surface-page: #1d2127;
+  --surface-card: #2a221d;
+  --surface-raised: #342a23;
+  --surface-sunken: #241d19;
+  --surface-inset: #1e1814;
+  --surface-terminal: #161210; /* still the deepest surface, so the console reads as a well */
+
+  --text-body: #f3e9dd;
+  --text-heading: #f3e9dd;
+  --text-muted: #cdbdad; /* >=5.3:1 on every panel, selection and header */
+  --text-subtle: #b3a193; /* annotations / placeholders */
+  --link: var(--blue-text);
+  --link-hover: #c4dcf7;
+
+  --border-ink: #a08b7a;
+  --border-hairline: #5e4d42;
+  --border-soft: #3a2f28;
+  --grid-line: #262b33;
+  --fill-edge: rgba(0, 0, 0, 0.45);
+  --scroll-thumb: #5e4d42;
+  --scrim: rgba(10, 7, 5, 0.6);
+  --hover-mix: #fff4e6;
+
+  --neutral-soft: #3a2f28;
+  --neutral-text: var(--text-muted);
+
+  --shadow-raised: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  --shadow-control: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  --shadow-overlay: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  --shadow-inset: inset 1px 1px 0 rgba(0, 0, 0, 0.35);
+  --bevel-top: inset 0 1px 0 rgba(255, 244, 230, 0.07);
+  --table-edge-shadow: rgba(0, 0, 0, 0.5);
+
+  /* Soft surfaces lighten on hover in the dark (they darken toward cocoa in the light). */
+  --mantine-color-blue-light-hover: color-mix(in srgb, var(--blue-soft) 86%, var(--hover-mix));
+  --mantine-color-red-light-hover: color-mix(in srgb, var(--red-soft) 86%, var(--hover-mix));
+  --mantine-color-green-light-hover: color-mix(in srgb, var(--green-soft) 86%, var(--hover-mix));
+  --mantine-color-teal-light-hover: color-mix(in srgb, var(--teal-soft) 86%, var(--hover-mix));
+  --mantine-color-grape-light-hover: color-mix(in srgb, var(--grape-soft) 86%, var(--hover-mix));
+  --mantine-color-yellow-light-hover: color-mix(in srgb, var(--yellow-soft) 86%, var(--hover-mix));
+  --mantine-color-orange-light-hover: color-mix(in srgb, var(--yellow-soft) 86%, var(--hover-mix));
+  --mantine-color-gray-light-hover: color-mix(in srgb, var(--neutral-soft) 86%, var(--hover-mix));
+
+  /* Mantine's dark ramp, rewarmed to cocoa so components the skin doesn't style (Tabs, Combobox options,
+     Kbd, …) still land on the palette: 0 ink · 2 muted · 3 subtle · 4 rules · 5–6 raised · 7 card · 8–9 deep. */
+  --mantine-color-dark-0: #f3e9dd;
+  --mantine-color-dark-1: #e2d5c6;
+  --mantine-color-dark-2: #cdbdad;
+  --mantine-color-dark-3: #b3a193;
+  --mantine-color-dark-4: #5e4d42;
+  --mantine-color-dark-5: #4a3c33;
+  --mantine-color-dark-6: #342a23;
+  --mantine-color-dark-7: #2a221d;
+  --mantine-color-dark-8: #241d19;
+  --mantine-color-dark-9: #1a1512;
+}
+
+/* Same (0,3,0) selector as the token block, or these lose to it and never apply. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin='pastel-retro'][data-mantine-color-scheme] {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --press-offset: none;
+  }
+}
+
+/* ======================================================== ELEMENTS ==== */
+[data-skin='pastel-retro'] body {
+  background: var(--surface-page);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings ride the mono display face (set in buildTheme); keep them cocoa. */
+[data-skin='pastel-retro'] .mantine-Title-root {
+  color: var(--text-heading);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Links: accessible blue (>=4.5:1 on ivory). Hover deepens and underlines so the
+   affordance never rides on colour alone. */
+[data-skin='pastel-retro'] a,
+[data-skin='pastel-retro'] .mantine-Anchor-root {
+  color: var(--link);
+  text-decoration: none;
+  text-underline-offset: 0.16em;
+}
+[data-skin='pastel-retro'] a:hover,
+[data-skin='pastel-retro'] .mantine-Anchor-root:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+/* Focus: a 2px blue ring at 2px offset on every interactive element. */
+[data-skin='pastel-retro'] :focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+[data-skin='pastel-retro'] code,
+[data-skin='pastel-retro'] kbd,
+[data-skin='pastel-retro'] pre,
+[data-skin='pastel-retro'] samp {
+  font-family: var(--font-mono);
+}
+[data-skin='pastel-retro'] ::selection {
+  background: var(--blue-soft);
+  color: var(--text-body);
+}
+
+/* --------------------------------------------------------------- app shell */
+
+/* Top bar: raised ivory, dark ink bottom rule, 1px white bevel. */
+[data-skin='pastel-retro'] .mantine-AppShell-header {
+  background: var(--surface-raised);
+  border-bottom: var(--border-w) solid var(--border-ink);
+  box-shadow: var(--bevel-top);
+}
+
+/* Sidebar rail: warm ivory card surface with a strong ink right border. */
+[data-skin='pastel-retro'] .mantine-AppShell-navbar {
+  background: var(--surface-card);
+  border-right: var(--border-w) solid var(--border-ink);
+}
+
+/* Main canvas: cool paper with the 32px technical-paper grid. */
+[data-skin='pastel-retro'] .mantine-AppShell-main {
+  background-color: var(--surface-page);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+/* ---------------------------------------------------------------- nav rail */
+
+[data-skin='pastel-retro'] .mantine-NavLink-root {
+  border: var(--border-w) solid transparent;
+  border-radius: var(--radius-sm);
+  margin-bottom: 3px;
+  padding: 8px 10px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-body);
+  transition: var(--transition-control);
+}
+[data-skin='pastel-retro'] .mantine-NavLink-section {
+  color: var(--text-muted);
+}
+[data-skin='pastel-retro'] .mantine-NavLink-root:hover {
+  background: var(--blue-soft);
+}
+/* Active item: pale-blue fill, blue outline, glyph blue, blue-tinted shadow. */
+[data-skin='pastel-retro'] .mantine-NavLink-root:is([data-active], [aria-current='page']) {
+  background: var(--surface-selected);
+  color: var(--text-body);
+  border: var(--border-w) solid var(--blue-fill);
+  box-shadow: var(--shadow-control);
+}
+[data-skin='pastel-retro'] .mantine-NavLink-root:is([data-active], [aria-current='page']) .mantine-NavLink-section {
+  color: var(--blue-text);
+}
+
+/* ------------------------------------------------------ cards / paper panels */
+
+[data-skin='pastel-retro'] .mantine-Card-root,
+[data-skin='pastel-retro'] .mantine-Paper-root {
+  background: var(--surface-card);
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-raised);
+}
+/* Accent-surface panels (<AccentCard>, data-surface="accent") are a pale-blue
+   informational well (--gam-surface-accent, set above) with a blue rule. */
+[data-skin='pastel-retro'] [data-surface='accent'] {
+  border-color: var(--blue-fill);
+}
+/* Dropdowns/menus are Paper too — they get the overlay treatment below. */
+[data-skin='pastel-retro'] .mantine-Menu-dropdown,
+[data-skin='pastel-retro'] .mantine-Popover-dropdown {
+  box-shadow: var(--shadow-overlay);
+}
+
+/* ----------------------------------------------------------------- buttons */
+
+/* Base geometry + weight for every button. */
+[data-skin='pastel-retro'] .mantine-Button-root {
+  border-radius: var(--radius-sm);
+  font-weight: var(--fw-semibold);
+  transition: var(--transition-control);
+}
+/* Filled (primary + semantic): keeps its accent/semantic hue for meaning and
+   guaranteed contrast, gains a crisp ink frame + hard shadow. Mantine renders
+   its DEFAULT (filled) variant with NO data-variant attribute — light/default/
+   subtle each carry theirs — so the no-attribute case is exactly the filled
+   buttons. */
+[data-skin='pastel-retro'] .mantine-Button-root:not([data-variant]),
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='filled'] {
+  border: var(--border-w) solid var(--fill-edge);
+  box-shadow: var(--shadow-control);
+}
+/* Default (workhorse secondary): raised ivory, full-strength ink outline. */
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='default'] {
+  border: var(--border-w) solid var(--border-ink);
+  color: var(--text-body);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-control);
+}
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='default']:hover {
+  background: var(--surface-sunken);
+}
+/* Light (tinted secondary): soft tone surface already; add the 1px tone edge. */
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='light'] {
+  border: var(--border-w-hair) solid var(--border-hairline);
+  box-shadow: none;
+}
+/* Shared tactile press: raised variants move 1px down-right and drop the shadow. */
+[data-skin='pastel-retro'] .mantine-Button-root:not([data-variant]):active,
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='filled']:active,
+[data-skin='pastel-retro'] .mantine-Button-root[data-variant='default']:active {
+  transform: var(--press-offset);
+  box-shadow: none;
+}
+/* Disabled explains nothing here but must read as disabled, not tertiary. */
+[data-skin='pastel-retro'] .mantine-Button-root:disabled,
+[data-skin='pastel-retro'] .mantine-Button-root[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ActionIcon: square beveled ivory control (top bar) / subtle (table rows). */
+[data-skin='pastel-retro'] .mantine-ActionIcon-root[data-variant='default'] {
+  border-radius: var(--radius-sm);
+  border: var(--border-w) solid var(--border-ink);
+  color: var(--text-body);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-control);
+  transition: var(--transition-control);
+}
+[data-skin='pastel-retro'] .mantine-ActionIcon-root[data-variant='default']:active {
+  transform: var(--press-offset);
+  box-shadow: none;
+}
+[data-skin='pastel-retro'] .mantine-ActionIcon-root[data-variant='subtle'] {
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ tables */
+
+/* The table is ONE ink-outlined rounded ivory block. Give it an
+   opaque ivory body so the transparent (odd) zebra rows read warm instead of
+   exposing the cool gridded canvas; a single 1.5px ink outline that overrides
+   Mantine's grey `withTableBorder` default; 6px radius with clipped corners
+   (separate + overflow:hidden); and the control shadow. */
+[data-skin='pastel-retro'] .mantine-Table-table,
+[data-skin='pastel-retro'] table {
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-card);
+  border: var(--border-w) solid var(--border-ink) !important;
+  border-radius: var(--radius-sm);
+  border-collapse: separate !important;
+  border-spacing: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-control);
+}
+/* Framed (scrollable) tables: the outline moves to the frame so it stays closed on the right while
+   the table scrolls sideways (ResizableTable.css); the table inside drops its own. The [data-bordered]
+   selector out-ranks the frame's default grey border, which loads after this sheet. */
+[data-skin='pastel-retro'] .gam-table-frame,
+[data-skin='pastel-retro'] .gam-table-frame[data-bordered] {
+  background: var(--surface-card);
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-control);
+}
+[data-skin='pastel-retro'] .gam-table-frame table {
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+/* The signature: butter-yellow header, dark bold labels, 1.5px ink bottom rule. */
+[data-skin='pastel-retro'] .mantine-Table-th,
+[data-skin='pastel-retro'] table thead th {
+  background: var(--surface-header);
+  border-bottom: var(--border-w) solid var(--border-ink) !important;
+  color: var(--text-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+/* Body cells: cocoa text on warm rows, quietest 1px hairline rule. */
+[data-skin='pastel-retro'] .mantine-Table-td,
+[data-skin='pastel-retro'] table tbody td {
+  color: var(--text-body);
+  border-bottom: var(--border-w-hair) solid var(--border-soft);
+}
+/* Zebra: even rows step down to the sunken ivory. */
+[data-skin='pastel-retro'] .mantine-Table-tbody tr:nth-of-type(even) td,
+[data-skin='pastel-retro'] table tbody tr:nth-of-type(even) td {
+  background: var(--surface-sunken);
+}
+/* Hover and selection are the same pale blue. */
+[data-skin='pastel-retro'] .mantine-Table-tr:hover td,
+[data-skin='pastel-retro'] table tbody tr:hover td,
+[data-skin='pastel-retro'] .mantine-Table-tr[data-selected] td {
+  background: var(--surface-selected);
+}
+
+/* -------------------------------------------------------------- form fields */
+
+/* Warm well; the border colour never changes on focus — the ring does. */
+[data-skin='pastel-retro'] .mantine-Input-input {
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-body);
+}
+[data-skin='pastel-retro'] .mantine-Input-input::placeholder {
+  color: var(--text-subtle);
+}
+[data-skin='pastel-retro'] .mantine-Input-input:focus,
+[data-skin='pastel-retro'] .mantine-Input-input:focus-within {
+  border-color: var(--border-ink);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+/* ------------------------------------------------------------------ checkbox */
+
+[data-skin='pastel-retro'] .mantine-Checkbox-input {
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-xs);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-inset);
+}
+[data-skin='pastel-retro'] .mantine-Checkbox-input:checked {
+  background: var(--blue-fill);
+  border-color: var(--border-ink);
+  box-shadow: none;
+}
+[data-skin='pastel-retro'] .mantine-Checkbox-input:checked + * .mantine-Checkbox-icon,
+[data-skin='pastel-retro'] .mantine-Checkbox-icon {
+  color: var(--text-on-pastel);
+}
+
+/* --------------------------------------------------------- segmented control */
+
+[data-skin='pastel-retro'] .mantine-SegmentedControl-root {
+  background: var(--surface-inset);
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+[data-skin='pastel-retro'] .mantine-SegmentedControl-indicator {
+  background: var(--surface-raised);
+  border: var(--border-w-hair) solid var(--border-hairline);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-control);
+}
+[data-skin='pastel-retro'] .mantine-SegmentedControl-label {
+  color: var(--text-muted);
+  font-weight: var(--fw-semibold);
+}
+[data-skin='pastel-retro'] .mantine-SegmentedControl-label[data-active] {
+  color: var(--text-body);
+  font-weight: var(--fw-bold);
+}
+
+/* --------------------------------------------------------- badges / notices */
+
+/* Badges: soft fill + tone text + tone edge + white bevel; sentence case, never
+   clickable. Fill/text come from the hue harmony repoints and the edge
+   from --gam-edge-<hue> (token block above); this adds shape, type and bevel. */
+[data-skin='pastel-retro'] .mantine-Badge-root {
+  border-radius: var(--radius-sm);
+  text-transform: none;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-2xs);
+  box-shadow: var(--bevel-top);
+}
+
+/* Alerts: soft tone surface, ink outline, control shadow. */
+[data-skin='pastel-retro'] .mantine-Alert-root {
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-control);
+}
+
+/* --------------------------------------------------------------- dividers */
+
+[data-skin='pastel-retro'] .mantine-Divider-root {
+  border-color: var(--border-hairline);
+}
+
+/* ------------------------------------------------------------------ tabs */
+
+/* Page tabs: muted labels, the active one in full ink over the accent underline; a warm hover instead of
+   Mantine's cool gray-0 / dark-6. */
+[data-skin='pastel-retro'] .mantine-Tabs-list {
+  --tab-border-color: var(--border-hairline);
+}
+[data-skin='pastel-retro'] .mantine-Tabs-tab {
+  color: var(--text-muted);
+  font-weight: var(--fw-semibold);
+}
+[data-skin='pastel-retro'] .mantine-Tabs-tab:hover {
+  background: var(--surface-sunken);
+}
+[data-skin='pastel-retro'] .mantine-Tabs-tab[data-active] {
+  color: var(--text-body);
+}
+
+/* --------------------------------------------------------------- stepper */
+
+[data-skin='pastel-retro'] .mantine-Stepper-stepIcon {
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------- overlays */
+
+[data-skin='pastel-retro'] .mantine-Modal-content,
+[data-skin='pastel-retro'] .mantine-Popover-dropdown,
+[data-skin='pastel-retro'] .mantine-Menu-dropdown {
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-overlay);
+}
+/* Modal header: raised ivory, 1.5px ink bottom rule, mono title. */
+[data-skin='pastel-retro'] .mantine-Modal-header {
+  background: var(--surface-raised);
+  border-bottom: var(--border-w) solid var(--border-ink);
+}
+[data-skin='pastel-retro'] .mantine-Modal-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+}
+/* Mantine zeroes the body's top padding under a header; with the header's rule drawn, content would sit
+   flush against it. */
+[data-skin='pastel-retro'] .mantine-Modal-body {
+  padding-top: var(--mantine-spacing-md);
+}
+/* Warm modal scrim, never black. */
+[data-skin='pastel-retro'] .mantine-Modal-overlay,
+[data-skin='pastel-retro'] .mantine-Overlay-root {
+  background: var(--scrim) !important;
+}
+
+/* ------------------------------------------------------------- toasts / tips */
+
+/* Toasts (Notification) get the same paper-panel treatment as cards — no skin
+   styled these before, so every mutating-action toast rendered in Mantine's
+   default white card. */
+[data-skin='pastel-retro'] .mantine-Notification-root {
+  background: var(--surface-card);
+  border: var(--border-w) solid var(--border-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+}
+[data-skin='pastel-retro'] .mantine-Notification-title {
+  color: var(--text-body);
+  font-weight: var(--fw-bold);
+}
+[data-skin='pastel-retro'] .mantine-Notification-description {
+  color: var(--text-body);
+}
+
+[data-skin='pastel-retro'] .mantine-Tooltip-tooltip {
+  background: var(--surface-card);
+  color: var(--text-body);
+  border: var(--border-w-hair) solid var(--border-ink);
+  box-shadow: var(--shadow-control);
+}
+/* Menu items: small radius, muted glyphs, pale-blue hover; destructive in red. */
+[data-skin='pastel-retro'] .mantine-Menu-item {
+  border-radius: var(--radius-xs);
+  font-weight: var(--fw-medium);
+}
+[data-skin='pastel-retro'] .mantine-Menu-itemSection {
+  color: var(--text-muted);
+}
+/* Mantine 8+ marks the keyboard-highlighted item with :focus / [data-menu-active] (was [data-hovered]). */
+[data-skin='pastel-retro'] .mantine-Menu-item:is(:hover, :focus, [data-menu-active]) {
+  background: var(--surface-selected);
+}
+[data-skin='pastel-retro'] .mantine-Menu-divider {
+  border-color: var(--border-hairline);
+}
+
+/* ----------------------------------------------- progress / ring / meters */
+
+/* Ring track never grey/black: repoint Mantine's root-curve var
+   rather than stroking `circle` (that would clobber the coloured arcs). Butt caps
+   keep the segment joins crisp; CSS beats the SVG stroke-linecap attribute.
+   (:root raises specificity over Mantine's [data-mantine-color-scheme] rule.) */
+:root[data-skin='pastel-retro'] .mantine-RingProgress-curve {
+  --rp-curve-root-color: var(--surface-inset);
+  stroke-linecap: butt;
+}
+/* Metric numbers ride the mono display face with tabular figures. */
+[data-skin='pastel-retro'] .mantine-RingProgress-label {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+/* Progress track: inset well; fill keeps its tone. */
+[data-skin='pastel-retro'] .mantine-Progress-root {
+  background: var(--surface-inset);
+  border: var(--border-w-hair) solid var(--border-hairline);
+  box-shadow: var(--shadow-inset);
+  border-radius: var(--radius-xs);
+}
+
+/* ----------------------------------------------------- sort / resize / term */
+
+/* (The resize grip now reads the --resize-grip role token, pinned to the pastel
+   blue fill in the token block above — no per-element override needed here.) */
+
+/* Terminal container chrome — the one dark surface. The xterm canvas paints its
+   own colours in JS (shared across skins, left as-is); here we frame it as a
+   warm-dark panel with the ink outline + hard shadow. */
+[data-skin='pastel-retro'] .mantine-Card-root:has(> .xterm),
+[data-skin='pastel-retro'] .xterm.terminal {
+  border-radius: var(--radius-sm);
+}
+
+/* ------------------------------------------------ scrollbars (warm, quiet) */
+
+[data-skin='pastel-retro'] * {
+  scrollbar-color: var(--scroll-thumb) var(--surface-sunken);
+}
+[data-skin='pastel-retro'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+[data-skin='pastel-retro'] ::-webkit-scrollbar-track {
+  background: var(--surface-sunken);
+}
+[data-skin='pastel-retro'] ::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border: 2px solid var(--surface-sunken);
+  border-radius: var(--radius-sm);
+}
+[data-skin='pastel-retro'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-subtle);
+}
+[data-skin='pastel-retro'] .mantine-ScrollArea-thumb {
+  background: var(--scroll-thumb) !important;
+  border-radius: var(--radius-sm);
+}
+
+/* --------------------------------------------------- responsive / motion */
+
+/* Grid switches off below 768px so it can't compete with dense content. */
+@media (max-width: 768px) {
+  [data-skin='pastel-retro'] .mantine-AppShell-main {
+    background-image: none;
+  }
+}
+
+/* Honor reduced-motion: drop the tactile press animation entirely. */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='pastel-retro'] .mantine-Button-root,
+  [data-skin='pastel-retro'] .mantine-ActionIcon-root,
+  [data-skin='pastel-retro'] .mantine-NavLink-root {
+    transition: none;
+  }
+  [data-skin='pastel-retro'] .mantine-Button-root:not([data-variant]):active,
+  [data-skin='pastel-retro'] .mantine-Button-root[data-variant='filled']:active,
+  [data-skin='pastel-retro'] .mantine-Button-root[data-variant='default']:active,
+  [data-skin='pastel-retro'] .mantine-ActionIcon-root[data-variant='default']:active {
+    transform: none;
+  }
+}
+
+/* Forced-colors: drop paper shadows and defer borders to the system palette so
+   the UI stays usable in high-contrast mode. */
+@media (forced-colors: active) {
+  [data-skin='pastel-retro'] .mantine-Card-root,
+  [data-skin='pastel-retro'] .mantine-Paper-root,
+  [data-skin='pastel-retro'] .mantine-Button-root,
+  [data-skin='pastel-retro'] .mantine-Input-input,
+  [data-skin='pastel-retro'] .mantine-Badge-root,
+  [data-skin='pastel-retro'] .mantine-Alert-root,
+  [data-skin='pastel-retro'] .mantine-Modal-content,
+  [data-skin='pastel-retro'] .mantine-Menu-dropdown {
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+  [data-skin='pastel-retro'] .mantine-NavLink-root:is([data-active], [aria-current='page']) {
+    border-color: Highlight;
+  }
+}

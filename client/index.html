@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Web UI for managing Google Drive and Gmail across a Google Workspace domain, powered by GAM7."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23228be6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2'/%3E%3Cpath d='M17 17v2a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2'/%3E%3C/svg%3E"
+    />
+    <title>GAM Integrator</title>
+    <script>
+      // Apply a persisted skin before first paint so a stored non-Modern skin
+      // doesn't flash Modern chrome for one frame (see ThemeProvider.tsx).
+      try {
+        var s = localStorage.getItem('gam-skin');
+        // A stored id from the retired 'retro' skin maps to 'pastel-retro'.
+        if (s === 'retro') localStorage.setItem('gam-skin', (s = 'pastel-retro'));
+        if (s) document.documentElement.dataset.skin = s;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
